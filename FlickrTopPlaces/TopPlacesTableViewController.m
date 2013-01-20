@@ -13,10 +13,14 @@
 
 @interface TopPlacesTableViewController ()
 @property (nonatomic, strong) NSArray *topPlaces;
+@property (nonatomic, strong) NSDictionary *placesByCountry;
+@property (nonatomic, strong) NSArray *sectionHeaders;
 @end
 
 @implementation TopPlacesTableViewController
 @synthesize topPlaces = _topPlaces;
+@synthesize placesByCountry = _placesByCountry;
+@synthesize sectionHeaders = _sectionHeaders;
 
 
 - (id)initWithStyle:(UITableViewStyle)style
@@ -31,19 +35,62 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
-    // Query Flickr for top places
-    NSArray *allPlaces = [FlickrFetcher topPlaces];
-    
-    // We want our places sorted alphabetically
-    NSSortDescriptor *sortDesc = [NSSortDescriptor sortDescriptorWithKey:FLICKR_PLACE_NAME ascending:YES];
-    NSArray *descriptors = [NSArray arrayWithObjects:sortDesc, nil];
-
-    // Store the new sorted array
-    self.topPlaces = [allPlaces sortedArrayUsingDescriptors:descriptors];
     
     //NSLog(@"Nb of places: %u", self.topPlaces.count);
+    [self loadTopPlaces];
+}
 
+- (void)loadTopPlaces {
+    
+    // Only load data if not set up already
+    if (self.topPlaces) return;
+    
+    // Create a sorted array of place descriptions
+    NSArray *sortDescriptors = [NSArray arrayWithObject:
+                                [NSSortDescriptor sortDescriptorWithKey:FLICKR_PLACE_NAME
+                                                              ascending:YES]];
+    
+    // Set up the array of top places, organised by place descriptions
+    self.topPlaces = [[FlickrFetcher topPlaces]
+                      sortedArrayUsingDescriptors:sortDescriptors];
+    
+    
+    // We want to divide the places up by country, so we can use a dictionary with the country
+    // names as key and the places as value
+    NSMutableDictionary *placesByCountry = [NSMutableDictionary dictionary];
+    
+    // For each place
+    for (NSDictionary *place in self.topPlaces) {
+        // extract the country name
+        NSString *country = [self parseForCountry:place];
+        // If the country isn't already in the dictionary, add it with a new array
+        if (![placesByCountry objectForKey:country]) {
+            [placesByCountry setObject:[NSMutableArray array] forKey:country];
+        }
+        // Add the place to the countries' value array
+        [(NSMutableArray *)[placesByCountry objectForKey:country] addObject:place];
+    }
+    
+    // Set the place by country
+    self.placesByCountry = [NSDictionary dictionaryWithDictionary:placesByCountry];
+    
+    // Set up the section headers in alphabetical order
+    self.sectionHeaders = [[placesByCountry allKeys] sortedArrayUsingSelector:
+                           @selector(caseInsensitiveCompare:)];
+}
+
+- (NSString *)parseForCountry: (NSDictionary *) topPlace {
+    
+    // Get the place information from the given topPlace
+    NSString *placeInformation = [topPlace objectForKey:FLICKR_PLACE_NAME];
+    
+    // Search the place information for the last comma.
+    NSRange lastComma = [placeInformation rangeOfString:@"," options:NSBackwardsSearch];
+    
+    // Return the text that comes after the last comma
+    if (lastComma.location != NSNotFound) {
+        return [placeInformation substringFromIndex:lastComma.location + 2];
+    } else return @"";
 }
 
 - (void)didReceiveMemoryWarning
@@ -53,16 +100,24 @@
 }
 
 #pragma mark - Table view data source
-//- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-//{
-//    // Return the number of sections.
-//    return 0;
-//}
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    // Return the number of sections.
+    return self.sectionHeaders.count;
+}
+
+- (NSString *) tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    
+    // Return the header at the given index
+    return [self.sectionHeaders objectAtIndex:section];
+}
 
 - (NSInteger)tableView:(UITableView *)tableView
  numberOfRowsInSection:(NSInteger)section
 {
-    return self.topPlaces.count;
+    // Return the number of rows for the given section
+    return [[self.placesByCountry objectForKey:
+             [self.sectionHeaders objectAtIndex:section]] count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView
@@ -76,14 +131,22 @@
                                       reuseIdentifier:CellIdentifier];
     }
     
-    // Get the info for the place at this index
-    NSDictionary *aPlace = self.topPlaces[indexPath.row];
+    // Get a handle the dictionary that contains the selected top place information
+    NSDictionary *topPlaceDictionary =
+    [[self.placesByCountry objectForKey:
+      [self.sectionHeaders objectAtIndex:indexPath.section]] objectAtIndex:indexPath.row];
+    
     // Get the place property from the dictionary
-    NSString *place = [aPlace objectForKey:FLICKR_PLACE_NAME];
+    NSString *place = [topPlaceDictionary objectForKey:FLICKR_PLACE_NAME];
     
     NSRange commaRange = [place rangeOfString:@","];
-    cell.textLabel.text = [place substringToIndex:commaRange.location];
-    cell.detailTextLabel.text = [place substringFromIndex:commaRange.location +1];
+    if (commaRange.location == NSNotFound) {
+        cell.textLabel.text = place;
+        cell.detailTextLabel.text = @"";
+    } else {
+        cell.textLabel.text = [place substringToIndex:commaRange.location];
+        cell.detailTextLabel.text = [place substringFromIndex:commaRange.location +1];
+    }
     
     return cell;
 }
@@ -140,7 +203,11 @@
 {
     if ([segue.identifier isEqualToString:@"Show Place Photos"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
-        NSDictionary *aPlace = self.topPlaces[indexPath.row];
+        
+        // Identify the selected place from within the places by country dictionary
+        NSDictionary *aPlace =
+        [[self.placesByCountry valueForKey:
+          [self.sectionHeaders objectAtIndex:indexPath.section]] objectAtIndex:indexPath.row];
         
         [segue.destinationViewController setPlace:aPlace];
     }
