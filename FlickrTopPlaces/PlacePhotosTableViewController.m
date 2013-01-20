@@ -146,13 +146,19 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    // Navigation logic may go here. Create and push another view controller.
-    /*
-     <#DetailViewController#> *detailViewController = [[<#DetailViewController#> alloc] initWithNibName:@"<#Nib name#>" bundle:nil];
-     // ...
-     // Pass the selected object to the new view controller.
-     [self.navigationController pushViewController:detailViewController animated:YES];
-     */
+    id detailViewController = [self.splitViewController.viewControllers lastObject];
+    if(detailViewController) {
+        NSDictionary *aPhoto = self.placePhotos[indexPath.row];
+        
+        // Save the photo in the recents list
+        [self addPhotoToRecentList:aPhoto];
+        
+        // Sets the photo to display
+        [detailViewController setPhoto:aPhoto];
+        
+        // Refresh the display of the detail view
+        [detailViewController refreshDisplay];
+    }
 }
 
 #pragma mark - Prepare Segue
