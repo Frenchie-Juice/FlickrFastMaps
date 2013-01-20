@@ -68,10 +68,10 @@
             </objects>
             <point key="canvasLocation" x="-1596" y="-2043"/>
         </scene>
-        <!--Recents Table View Controller - Recent Photos-->
+        <!--Recent Photo List Table View Controller - Recent Photos-->
         <scene sceneID="ZNd-tz-Rae">
             <objects>
-                <tableViewController id="gma-qM-eu9" customClass="RecentsTableViewController" sceneMemberID="viewController">
+                <tableViewController id="gma-qM-eu9" customClass="RecentPhotoListTableViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="ifG-SY-cJS">
                         <rect key="frame" x="0.0" y="64" width="320" height="739"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -135,10 +135,10 @@
             </objects>
             <point key="canvasLocation" x="-2949" y="-1546"/>
         </scene>
-        <!--Place Photos Table View Controller-->
+        <!--Photo List Table View Controller-->
         <scene sceneID="NHO-YC-6Cx">
             <objects>
-                <tableViewController id="Z2V-Uy-NXk" customClass="PlacePhotosTableViewController" sceneMemberID="viewController">
+                <tableViewController id="Z2V-Uy-NXk" customClass="PhotoListTableViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="mSP-Bz-JsQ">
                         <rect key="frame" x="0.0" y="64" width="320" height="739"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -276,11 +276,11 @@
                 <relationship kind="outlet" name="toolbar" candidateClass="UIToolbar"/>
             </relationships>
         </class>
-        <class className="PlacePhotosTableViewController" superclassName="UITableViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/PlacePhotosTableViewController.h"/>
+        <class className="PhotoListTableViewController" superclassName="UITableViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/PhotoListTableViewController.h"/>
         </class>
-        <class className="RecentsTableViewController" superclassName="PlacePhotosTableViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/RecentsTableViewController.h"/>
+        <class className="RecentPhotoListTableViewController" superclassName="PhotoListTableViewController">
+            <source key="sourceIdentifier" type="project" relativePath="./Classes/RecentPhotoListTableViewController.h"/>
         </class>
         <class className="TopPlacesTableViewController" superclassName="UITableViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/TopPlacesTableViewController.h"/>

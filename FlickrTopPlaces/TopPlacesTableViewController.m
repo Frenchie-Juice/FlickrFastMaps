@@ -7,7 +7,7 @@
 //
 
 #import "TopPlacesTableViewController.h"
-#import "PlacePhotosTableViewController.h"
+#import "PhotoListTableViewController.h"
 #import "FlickrAPIKey.h"
 #import "FlickrFetcher.h"
 

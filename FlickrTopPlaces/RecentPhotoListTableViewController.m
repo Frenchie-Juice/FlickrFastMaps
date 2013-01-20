@@ -6,15 +6,15 @@
 //  Copyright (c) 2013 Fred Gagnepain. All rights reserved.
 //
 
-#import "RecentsTableViewController.h"
-#import "PlacePhotosTableViewController.h"
+#import "RecentPhotoListTableViewController.h"
+#import "PhotoListTableViewController.h"
 #import "FlickrPhotoViewController.h"
 
-@interface RecentsTableViewController ()
+@interface RecentPhotoListTableViewController ()
 
 @end
 
-@implementation RecentsTableViewController
+@implementation RecentPhotoListTableViewController
 
 #define RECENT_PHOTOS_KEY @"FlickrPhotos.MostRecent"
 
@@ -30,7 +30,7 @@
     // Load a list of photos from user preferences
     NSArray *recentPhotos = [defaults objectForKey:RECENT_PHOTOS_KEY];
     if(recentPhotos){
-        self.placePhotos = recentPhotos;
+        self.photoList = recentPhotos;
     }
     
     // Refresh the table
@@ -114,7 +114,7 @@
 {
     if ([segue.identifier isEqualToString:@"Reload Recent Photo"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
-        NSDictionary *aPhoto = self.placePhotos[indexPath.row];
+        NSDictionary *aPhoto = self.photoList[indexPath.row];
         
         [segue.destinationViewController setPhoto:aPhoto];
     }

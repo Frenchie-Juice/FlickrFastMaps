@@ -6,18 +6,18 @@
 //  Copyright (c) 2013 Fred Gagnepain. All rights reserved.
 //
 
-#import "PlacePhotosTableViewController.h"
+#import "PhotoListTableViewController.h"
 #import "FlickrPhotoViewController.h"
 #import "FlickrAPIKey.h"
 #import "FlickrFetcher.h"
 
-@interface PlacePhotosTableViewController ()
+@interface PhotoListTableViewController ()
 
 @end
 
-@implementation PlacePhotosTableViewController
+@implementation PhotoListTableViewController
 @synthesize place = _place;
-@synthesize placePhotos = _placePhotos;
+@synthesize photoList = _photoList;
 
 #define NB_OF_PHOTOS 50
 #define RECENTS_MAX_LIST_SIZE 20
@@ -46,7 +46,7 @@
     NSArray *descriptors = [NSArray arrayWithObjects:sortDesc, nil];
     
     // Store the new sorted array
-    self.placePhotos = [photos sortedArrayUsingDescriptors:descriptors];
+    self.photoList = [photos sortedArrayUsingDescriptors:descriptors];
 }
 
 - (void)didReceiveMemoryWarning
@@ -66,7 +66,7 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     // Return the number of rows in the section.
-    return self.placePhotos.count;
+    return self.photoList.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -80,7 +80,7 @@
     }
     
     // Configure the cell...
-    NSDictionary *aPhoto = self.placePhotos[indexPath.row];
+    NSDictionary *aPhoto = self.photoList[indexPath.row];
     
     NSString *title = [aPhoto valueForKey:FLICKR_PHOTO_TITLE];
     NSString *description = [aPhoto valueForKeyPath:FLICKR_PHOTO_DESCRIPTION];
@@ -148,7 +148,7 @@
 {
     id detailViewController = [self.splitViewController.viewControllers lastObject];
     if(detailViewController) {
-        NSDictionary *aPhoto = self.placePhotos[indexPath.row];
+        NSDictionary *aPhoto = self.photoList[indexPath.row];
         
         // Save the photo in the recents list
         [self addPhotoToRecentList:aPhoto];
@@ -167,7 +167,7 @@
 {
     if ([segue.identifier isEqualToString:@"Show Single Photo"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
-        NSDictionary *aPhoto = self.placePhotos[indexPath.row];
+        NSDictionary *aPhoto = self.photoList[indexPath.row];
 
         // Save the photo in the recents list
         [self addPhotoToRecentList:aPhoto];

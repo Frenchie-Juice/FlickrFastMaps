@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface PlacePhotosTableViewController : UITableViewController
+@interface PhotoListTableViewController : UITableViewController
 @property (nonatomic, strong) NSDictionary *place;
-@property (nonatomic, strong) NSArray *placePhotos;
+@property (nonatomic, strong) NSArray *photoList;
 @end

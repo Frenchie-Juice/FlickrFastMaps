@@ -54,10 +54,10 @@
             </objects>
             <point key="canvasLocation" x="2580" y="337"/>
         </scene>
-        <!--Recents Table View Controller - Recent Photos-->
+        <!--Recent Photo List Table View Controller - Recent Photos-->
         <scene sceneID="1pV-c5-ofA">
             <objects>
-                <tableViewController id="yfC-aU-Okz" customClass="RecentsTableViewController" sceneMemberID="viewController">
+                <tableViewController id="yfC-aU-Okz" customClass="RecentPhotoListTableViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="Wet-jz-pVZ">
                         <rect key="frame" x="0.0" y="64" width="320" height="367"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -155,10 +155,10 @@
             </objects>
             <point key="canvasLocation" x="1391" y="722"/>
         </scene>
-        <!--Place Photos Table View Controller-->
+        <!--Photo List Table View Controller-->
         <scene sceneID="EPh-eF-HuM">
             <objects>
-                <tableViewController id="bll-zH-Rbc" customClass="PlacePhotosTableViewController" sceneMemberID="viewController">
+                <tableViewController id="bll-zH-Rbc" customClass="PhotoListTableViewController" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="xTO-VF-AQP">
                         <rect key="frame" x="0.0" y="64" width="320" height="367"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -252,12 +252,6 @@
                 <relationship kind="outlet" name="imageView" candidateClass="UIImageView"/>
                 <relationship kind="outlet" name="scrollView" candidateClass="UIScrollView"/>
             </relationships>
-        </class>
-        <class className="PlacePhotosTableViewController" superclassName="UITableViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/PlacePhotosTableViewController.h"/>
-        </class>
-        <class className="RecentsTableViewController" superclassName="PlacePhotosTableViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/RecentsTableViewController.h"/>
         </class>
         <class className="TopPlacesTableViewController" superclassName="UITableViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/TopPlacesTableViewController.h"/>
