@@ -55,34 +55,15 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
     self.scrollView.delegate = self;
     self.title = [self.photo objectForKey:FLICKR_PHOTO_TITLE];
     
-    // Request the photo's URL
-    NSURL *url = [FlickrFetcher urlForPhoto:self.photo format:FlickrPhotoFormatLarge];
-    // Get the image from the URL
-    NSData *imgData = [NSData dataWithContentsOfURL:url];
-    UIImage *image = [UIImage imageWithData:imgData];
-
-    // Set the image inside the view
-    self.imageView.image = image;
-
-    // Setup the scrollview
-    self.scrollView.contentSize = self.imageView.image.size;
-    self.imageView.frame = CGRectMake(0, 0, self.imageView.image.size.width, self.imageView.image.size.height);
+    [self updateView];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    
-    // Width ratio compares the width of the viewing area with the width of the image
-    float widthRatio = self.scrollView.bounds.size.width / self.imageView.image.size.width;
-    
-    // Height ratio compares the height of the viewing area with the height of the image
-    float heightRatio = self.scrollView.bounds.size.height / self.imageView.image.size.height;
-    
-    // Update the zoom scale
-    self.scrollView.zoomScale = MAX(widthRatio, heightRatio);
-    
+    [self fillView];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
