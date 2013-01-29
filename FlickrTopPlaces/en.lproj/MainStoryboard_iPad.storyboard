@@ -248,6 +248,7 @@
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="MiY-KK-nfu"/>
                                     <barButtonItem title="Title" style="plain" id="Hps-3P-XaJ"/>
                                     <barButtonItem style="plain" systemItem="flexibleSpace" id="ntH-NK-m0C"/>
+                                    <barButtonItem style="plain" id="8Cr-Nm-noU"/>
                                 </items>
                             </toolbar>
                         </subviews>
@@ -257,6 +258,8 @@
                     <connections>
                         <outlet property="imageView" destination="PUO-ek-Qny" id="BQL-RE-HYs"/>
                         <outlet property="scrollView" destination="Xjf-c0-Uhr" id="bDk-BP-zXD"/>
+                        <outlet property="spinner" destination="8Cr-Nm-noU" id="Onb-HU-fEB"/>
+                        <outlet property="spinnerButton" destination="8Cr-Nm-noU" id="PJT-ba-gGw"/>
                         <outlet property="titleButton" destination="Hps-3P-XaJ" id="2Gk-oL-RDf"/>
                         <outlet property="toolbar" destination="pbi-ev-S3x" id="7NF-nP-8fu"/>
                     </connections>
@@ -272,6 +275,7 @@
             <relationships>
                 <relationship kind="outlet" name="imageView" candidateClass="UIImageView"/>
                 <relationship kind="outlet" name="scrollView" candidateClass="UIScrollView"/>
+                <relationship kind="outlet" name="spinnerButton" candidateClass="UIBarButtonItem"/>
                 <relationship kind="outlet" name="titleButton" candidateClass="UIBarButtonItem"/>
                 <relationship kind="outlet" name="toolbar" candidateClass="UIToolbar"/>
             </relationships>

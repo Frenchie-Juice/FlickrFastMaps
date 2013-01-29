@@ -9,13 +9,17 @@
 #import "FlickrPhotoViewController.h"
 #import "FlickrAPIKey.h"
 #import "FlickrFetcher.h"
+#import "DataCache.h"
 
 @interface FlickrPhotoViewController () <UIScrollViewDelegate>
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (weak, nonatomic) IBOutlet UIToolbar *toolbar;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *titleButton;
+@property (weak, nonatomic) IBOutlet UIBarButtonItem *spinnerButton;
+@property (strong, nonatomic) UIActivityIndicatorView *spinner;
 @property (strong, nonatomic) UIBarButtonItem *splitViewBarButtonItem;
+@property (strong, nonatomic) DataCache *photoCache;
 @end
 
 @implementation FlickrPhotoViewController
@@ -23,18 +27,14 @@
 @synthesize scrollView = _scrollView;
 @synthesize toolbar = _toolbar;
 @synthesize titleButton = _titleButton;
+@synthesize spinnerButton = _spinnerButton;
+@synthesize spinner = _spinner;
 @synthesize splitViewBarButtonItem = _splitViewBarButtonItem;
+@synthesize photoCache = _photoCache;
+@synthesize photo = _photo;
 
 
-- (void)awakeFromNib
-{
-    [super awakeFromNib];
-    self.splitViewController.delegate = self;
-}
-
-// Puts the splitViewBarButton in our toolbar (and/or removes the old one).
-// Must be called when our splitViewBarButtonItem property changes
-//  (and also after our view has been loaded from the storyboard (viewDidLoad)).
+#pragma mark - View Orientation Management
 
 - (void)handleSplitViewBarButtonItem:(UIBarButtonItem *)splitViewBarButtonItem
 {
@@ -52,20 +52,6 @@
     }
 }
 
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-    
-    self.scrollView.delegate = self;
-    self.title = [self.photo objectForKey:FLICKR_PHOTO_TITLE];
-    
-    [self updateView];
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [self fillView];
-}
-
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     // Return YES for supported orientations
@@ -76,46 +62,106 @@
     }
 }
 
-// On the iPad, this method is used to display the photo
-// It does the same job as viewDidLoad and viewWillAppear
+#pragma mark - DataCache Management
+
+- (NSString *)findPhotoID
+{
+    return [self.photo objectForKey:FLICKR_PHOTO_ID];
+}
+
+- (NSData *) fetchImageData
+{
+    // Fetch the image from the cache
+    NSData *imgData = [self.photoCache reloadDataFromCacheFile:[self findPhotoID]];
+    
+    if (!imgData)
+        // Retrieve the image from Flickr
+        imgData = [NSData dataWithContentsOfURL:
+                 [FlickrFetcher urlForPhoto:self.photo format:FlickrPhotoFormatLarge]];
+    
+    return imgData;
+}
+
+- (void)storeImageData: (NSData *)data
+{
+    [self.photoCache storeData:data intoCacheFile:[self findPhotoID]];
+}
+
+
+#pragma mark - ViewController Lifecycle
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    self.scrollView.delegate = self;
+    self.splitViewController.delegate = self;
+    
+    self.title = [self.photo objectForKey:FLICKR_PHOTO_TITLE];
+    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    
+    self.photoCache = [DataCache cacheForFolder:@"FlickrPhotoCache"];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    if (self.photo)
+        [self refreshDisplay];
+}
+
+// Load a photo on screen
 - (void)refreshDisplay
 {
-    // Set up the view
-    [self updateView];
+    // Show the spinner while we load the data from Flickr
+    [self.spinner startAnimating];
     
-    // Set the zoom level of the view to fill up the screen
-    [self fillView];
+    if (self.splitViewController) // in iPad mode
+        self.spinnerButton.customView = self.spinner;
+    else // in iPhone mode
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+    
+    
+    dispatch_queue_t downloadQueue = dispatch_queue_create("flickr fetcher", NULL);
+    dispatch_async(downloadQueue, ^{
+        // Retrieve the current image's data
+        NSData *imgData = [self fetchImageData];
+        
+        // Store the data in the cache
+        [self storeImageData:imgData];
+        
+        // UI tasks have to be done on the main thread
+        dispatch_async(dispatch_get_main_queue(), ^{
+            UIImage *image = [UIImage imageWithData:imgData];
+            
+            // Set the image inside the view
+            self.imageView.image = image;
+            
+            // Reset the zoom scale back to 1
+            self.scrollView.zoomScale = 1;
+            
+            // Setup the size of the scroll view
+            self.scrollView.contentSize = self.imageView.image.size;
+            
+            // Setup the frame of the image
+            self.imageView.frame =
+            CGRectMake(0, 0, self.imageView.image.size.width, self.imageView.image.size.height);
+            
+            // Fit the image in the view
+            [self fillView];
+            
+            // Stop the spinner wheel (iPhone mode)
+            self.navigationItem.rightBarButtonItem = nil;
+            
+            // Stop the spinner wheel (iPad mode)
+            [self.spinner stopAnimating];
+            
+            // Set the title of the image on the iPad
+            self.titleButton.title = [self.photo objectForKey:FLICKR_PHOTO_TITLE];
+            
+        });
+    });
 }
 
-// On the iPad, viewDidLoad has already been called so this method
-// does the same job of querying and displaying the photo
-- (void)updateView {
-    
-    // Request the photo's URL
-    NSURL *url = [FlickrFetcher urlForPhoto:self.photo format:FlickrPhotoFormatLarge];
-    // Get the image from the URL
-    NSData *imgData = [NSData dataWithContentsOfURL:url];
-    UIImage *image = [UIImage imageWithData:imgData];
-    
-    // Set the image inside the view
-    self.imageView.image = image;
-    
-    // Set the title of the image
-    self.titleButton.title = [self.photo objectForKey:FLICKR_PHOTO_TITLE];
-    
-    // Reset the zoom scale back to 1
-    self.scrollView.zoomScale = 1;
-    
-    // Setup the size of the scroll view
-    self.scrollView.contentSize = self.imageView.image.size;
-    
-    // Setup the frame of the image
-    self.imageView.frame =
-    CGRectMake(0, 0, self.imageView.image.size.width, self.imageView.image.size.height);
-}
-
-// On the iPad, viewWillAppear has already been called so this method
-// does the same job of displaying the photo as large as possible
+// Fit as much of the image as possible in the view
 - (void)fillView {
     
     // Width ratio compares the width of the viewing area with the width of the image
@@ -129,11 +175,6 @@
     
 }
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
 
 #pragma mark - UIScrollViewDelegate
 

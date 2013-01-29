@@ -24,29 +24,41 @@
 #define RECENT_PHOTOS_KEY @"FlickrPhotos.MostRecent"
 
 
-- (id)initWithStyle:(UITableViewStyle)style
+- (void)setPhotoList:(NSArray *)photoList
 {
-    self = [super initWithStyle:style];
-    if (self) {
-        // Custom initialization
+    if (_photoList != photoList) {
+        _photoList = photoList;
+        // Model changed, so update our View (the table)
+        [self.tableView reloadData];
     }
-    return self;
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 
-    // Get photos info for this place
-    NSArray *photos = [FlickrFetcher photosInPlace:self.place maxResults:NB_OF_PHOTOS];
+    // Show the spinner while we load the data from Flickr
+    UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    [spinner startAnimating];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:spinner];
     
-    // We want our photos title sorted alphabetically
-    NSSortDescriptor *sortDesc = [NSSortDescriptor sortDescriptorWithKey:FLICKR_PHOTO_TITLE
-                                                               ascending:YES];
-    NSArray *descriptors = [NSArray arrayWithObjects:sortDesc, nil];
-    
-    // Store the new sorted array
-    self.photoList = [photos sortedArrayUsingDescriptors:descriptors];
+    // Get photos info for this place and query in a different thread
+    dispatch_queue_t downloadQueue = dispatch_queue_create("flickr downloader", NULL);
+    dispatch_async(downloadQueue, ^{
+        NSArray *photos = [FlickrFetcher photosInPlace:self.place maxResults:NB_OF_PHOTOS];
+        
+        // We want our photos title sorted alphabetically
+        NSSortDescriptor *sortDesc = [NSSortDescriptor sortDescriptorWithKey:FLICKR_PHOTO_TITLE
+                                                                   ascending:YES];
+        NSArray *descriptors = [NSArray arrayWithObjects:sortDesc, nil];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Store the new sorted array
+            self.photoList = [photos sortedArrayUsingDescriptors:descriptors];
+            // Stop the spinning wheel
+            self.navigationItem.rightBarButtonItem = nil;
+        });
+    });
 }
 
 - (void)didReceiveMemoryWarning

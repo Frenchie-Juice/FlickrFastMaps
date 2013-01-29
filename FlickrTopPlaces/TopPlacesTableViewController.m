@@ -23,25 +23,24 @@
 @synthesize sectionHeaders = _sectionHeaders;
 
 
-- (id)initWithStyle:(UITableViewStyle)style
-{
-    self = [super initWithStyle:style];
-    if (self) {
-        // Custom initialization
-    }
-    return self;
-}
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
-    //NSLog(@"Nb of places: %u", self.topPlaces.count);
     [self loadTopPlaces];
+    
 }
 
-- (void)loadTopPlaces {
-    
+- (void)setTopPlaces:(NSArray *)topPlaces
+{
+    if (_topPlaces != topPlaces) {
+        _topPlaces = topPlaces;
+        // Model changed, so update our View (the table)
+        [self.tableView reloadData];
+    }
+}
+
+- (void)loadTopPlaces
+{
     // Only load data if not set up already
     if (self.topPlaces) return;
     
@@ -49,37 +48,56 @@
     NSArray *sortDescriptors = [NSArray arrayWithObject:
                                 [NSSortDescriptor sortDescriptorWithKey:FLICKR_PLACE_NAME
                                                               ascending:YES]];
+ 
+    // Show the spinner while we load the data from Flickr
+    UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    [spinner startAnimating];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:spinner];
     
-    // Set up the array of top places, organised by place descriptions
-    self.topPlaces = [[FlickrFetcher topPlaces]
-                      sortedArrayUsingDescriptors:sortDescriptors];
-    
-    
-    // We want to divide the places up by country, so we can use a dictionary with the country
-    // names as key and the places as value
-    NSMutableDictionary *placesByCountry = [NSMutableDictionary dictionary];
-    
-    // For each place
-    for (NSDictionary *place in self.topPlaces) {
-        // extract the country name
-        NSString *country = [self parseForCountry:place];
-        // If the country isn't already in the dictionary, add it with a new array
-        if (![placesByCountry objectForKey:country]) {
-            [placesByCountry setObject:[NSMutableArray array] forKey:country];
+    dispatch_queue_t downloadQueue = dispatch_queue_create("flickr downloader", NULL);
+    dispatch_async(downloadQueue, ^{
+    //dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0),^{
+        // Set up the array of top places, organised by place descriptions
+        NSArray *topPlaces = [[FlickrFetcher topPlaces]
+                              sortedArrayUsingDescriptors:sortDescriptors];
+        
+        // We want to divide the places up by country, so we can use a dictionary with the country
+        // names as key and the places as value
+        NSMutableDictionary *placesByCountry = [NSMutableDictionary dictionary];
+        
+        // For each place
+        for (NSDictionary *place in topPlaces) {
+            // extract the country name
+            NSString *country = [self parseForCountry:place];
+            // If the country isn't already in the dictionary, add it with a new array
+            if (![placesByCountry objectForKey:country]) {
+                [placesByCountry setObject:[NSMutableArray array] forKey:country];
+            }
+            // Add the place to the countries' value array
+            [(NSMutableArray *)[placesByCountry objectForKey:country] addObject:place];
         }
-        // Add the place to the countries' value array
-        [(NSMutableArray *)[placesByCountry objectForKey:country] addObject:place];
-    }
-    
-    // Set the place by country
-    self.placesByCountry = [NSDictionary dictionaryWithDictionary:placesByCountry];
-    
-    // Set up the section headers in alphabetical order
-    self.sectionHeaders = [[placesByCountry allKeys] sortedArrayUsingSelector:
-                           @selector(caseInsensitiveCompare:)];
+        
+        // Execute the remainder in the main thread
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Set the place by country
+            self.placesByCountry = [NSDictionary dictionaryWithDictionary:placesByCountry];
+            
+            // Set up the section headers in alphabetical order
+            self.sectionHeaders = [[placesByCountry allKeys] sortedArrayUsingSelector:
+                                   @selector(caseInsensitiveCompare:)];
+            
+            // Set the top places
+            self.topPlaces = topPlaces;
+            
+            // Stop the spinner wheel
+            self.navigationItem.rightBarButtonItem = nil;
+        });
+    });
 }
 
-- (NSString *)parseForCountry: (NSDictionary *) topPlace {
+
+- (NSString *)parseForCountry: (NSDictionary *) topPlace
+{
     
     // Get the place information from the given topPlace
     NSString *placeInformation = [topPlace objectForKey:FLICKR_PLACE_NAME];
