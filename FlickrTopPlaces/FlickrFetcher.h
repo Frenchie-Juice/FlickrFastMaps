@@ -23,8 +23,14 @@ typedef enum {
 
 @interface FlickrFetcher : NSObject
 
+#pragma mark - Fetching API
 + (NSArray *)topPlaces;
 + (NSArray *)photosInPlace:(NSDictionary *)place maxResults:(int)maxResults;
 + (NSURL *)urlForPhoto:(NSDictionary *)photo format:(FlickrPhotoFormat)format;
+
+#pragma mark - Utilities
++ (NSString *)parseCountry:(NSDictionary *)place;
++ (NSString *)parseCity:(NSDictionary *)place;
++ (NSString *)parseRegion:(NSDictionary *)place;
 
 @end

@@ -8,8 +8,10 @@
 
 #import "TopPlacesTableViewController.h"
 #import "PhotoListTableViewController.h"
+#import "MapViewController.h"
 #import "FlickrAPIKey.h"
 #import "FlickrFetcher.h"
+#import "FlickrPlaceAnnotation.h"
 
 @interface TopPlacesTableViewController ()
 @property (nonatomic, strong) NSArray *topPlaces;
@@ -26,17 +28,59 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear: animated];
     [self loadTopPlaces];
-    
 }
 
 - (void)setTopPlaces:(NSArray *)topPlaces
 {
     if (_topPlaces != topPlaces) {
         _topPlaces = topPlaces;
+        
+        [self updateSplitViewDetail];
         // Model changed, so update our View (the table)
-        [self.tableView reloadData];
+        if (self.tableView.window) [self.tableView reloadData];
     }
+}
+
+- (void)updateSplitViewDetail
+{
+    MapViewController *mapVC = [self splitViewMapViewController];
+    mapVC.annotations = [self mapAnnotations];
+}
+
+- (MapViewController *)splitViewMapViewController
+{
+    id detail = [self.splitViewController.viewControllers lastObject];
+    id mapVC = nil;
+    
+    // The detail view might be embedded in a Navigation Controller
+    if ([detail isKindOfClass:[UINavigationController class]]) {
+        UINavigationController *nc = (UINavigationController *)detail;
+        if ([nc.topViewController isKindOfClass:[MapViewController class]]) {
+            mapVC = nc.topViewController;
+        }
+    }
+    // MapViewController directly linked to the SplitViewController
+    else if ([detail isKindOfClass:[MapViewController class]]) {
+        mapVC = detail;
+    }
+    
+    return mapVC;
+}
+
+
+- (NSArray *)mapAnnotations
+{
+    NSMutableArray *annotations = [NSMutableArray arrayWithCapacity:[self.topPlaces count]];
+    for (NSDictionary *place in self.topPlaces) {
+        [annotations addObject:[FlickrPlaceAnnotation annotationForPlace:place]];
+    }
+    return annotations;
 }
 
 - (void)loadTopPlaces
@@ -68,7 +112,7 @@
         // For each place
         for (NSDictionary *place in topPlaces) {
             // extract the country name
-            NSString *country = [self parseForCountry:place];
+            NSString *country = [FlickrFetcher parseCountry:place];
             // If the country isn't already in the dictionary, add it with a new array
             if (![placesByCountry objectForKey:country]) {
                 [placesByCountry setObject:[NSMutableArray array] forKey:country];
@@ -95,21 +139,6 @@
     });
 }
 
-
-- (NSString *)parseForCountry: (NSDictionary *) topPlace
-{
-    
-    // Get the place information from the given topPlace
-    NSString *placeInformation = [topPlace objectForKey:FLICKR_PLACE_NAME];
-    
-    // Search the place information for the last comma.
-    NSRange lastComma = [placeInformation rangeOfString:@"," options:NSBackwardsSearch];
-    
-    // Return the text that comes after the last comma
-    if (lastComma.location != NSNotFound) {
-        return [placeInformation substringFromIndex:lastComma.location + 2];
-    } else return @"";
-}
 
 - (void)didReceiveMemoryWarning
 {

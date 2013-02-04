@@ -18,7 +18,6 @@
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *titleButton;
 @property (weak, nonatomic) IBOutlet UIBarButtonItem *spinnerButton;
 @property (strong, nonatomic) UIActivityIndicatorView *spinner;
-@property (strong, nonatomic) UIBarButtonItem *splitViewBarButtonItem;
 @property (strong, nonatomic) DataCache *photoCache;
 @end
 
@@ -29,38 +28,10 @@
 @synthesize titleButton = _titleButton;
 @synthesize spinnerButton = _spinnerButton;
 @synthesize spinner = _spinner;
-@synthesize splitViewBarButtonItem = _splitViewBarButtonItem;
 @synthesize photoCache = _photoCache;
 @synthesize photo = _photo;
 
 
-#pragma mark - View Orientation Management
-
-- (void)handleSplitViewBarButtonItem:(UIBarButtonItem *)splitViewBarButtonItem
-{
-    NSMutableArray *toolbarItems = [self.toolbar.items mutableCopy];
-    if (_splitViewBarButtonItem) [toolbarItems removeObject:_splitViewBarButtonItem];
-    if (splitViewBarButtonItem) [toolbarItems insertObject:splitViewBarButtonItem atIndex:0];
-    self.toolbar.items = toolbarItems;
-    _splitViewBarButtonItem = splitViewBarButtonItem;
-}
-
-- (void)setSplitViewBarButtonItem:(UIBarButtonItem *)splitViewBarButtonItem
-{
-    if (splitViewBarButtonItem != _splitViewBarButtonItem) {
-        [self handleSplitViewBarButtonItem:splitViewBarButtonItem];
-    }
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-    // Return YES for supported orientations
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
-        return (interfaceOrientation != UIInterfaceOrientationPortraitUpsideDown);
-    } else {
-        return YES;
-    }
-}
 
 #pragma mark - DataCache Management
 
@@ -95,8 +66,6 @@
     [super viewDidLoad];
     
     self.scrollView.delegate = self;
-    self.splitViewController.delegate = self;
-    
     self.title = [self.photo objectForKey:FLICKR_PHOTO_TITLE];
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     
@@ -181,34 +150,6 @@
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView
 {
     return self.imageView;
-}
-
-#pragma mark - UISplitViewControllerDelegate
-
-- (BOOL)splitViewController:(UISplitViewController *)svc
-   shouldHideViewController:(UIViewController *)vc
-              inOrientation:(UIInterfaceOrientation)orientation
-{
-    return UIInterfaceOrientationIsPortrait(orientation);
-}
-
-- (void)splitViewController:(UISplitViewController *)svc
-     willHideViewController:(UIViewController *)aViewController
-          withBarButtonItem:(UIBarButtonItem *)barButtonItem
-       forPopoverController:(UIPopoverController *)pc
-{
-    barButtonItem.title = @"Top Places";
-    // Tell the detail view to put this button in the toolbar
-    self.splitViewBarButtonItem = barButtonItem;
-    
-}
-
-- (void)splitViewController:(UISplitViewController *)svc
-     willShowViewController:(UIViewController *)aViewController
-  invalidatingBarButtonItem:(UIBarButtonItem *)barButtonItem
-{
-    // Tell the detail view to put the button away
-    self.splitViewBarButtonItem = nil;
 }
 
 @end

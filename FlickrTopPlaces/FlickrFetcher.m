@@ -79,4 +79,47 @@
     return [NSURL URLWithString:[self urlStringForPhoto:photo format:format]];
 }
 
+#pragma mark - Utilities
++ (NSString *)parseCountry:(NSDictionary *)place
+{
+    // Get the place information from the given place
+    NSString *placeInformation = [place objectForKey:FLICKR_PLACE_NAME];
+    
+    // Search the place information for the last comma.
+    NSRange lastComma = [placeInformation rangeOfString:@"," options:NSBackwardsSearch];
+    
+    // Return the text that comes after the last comma
+    if (lastComma.location != NSNotFound) {
+        return [placeInformation substringFromIndex:lastComma.location + 2];
+    } else return @"";
+}
+
++ (NSString *)parseCity:(NSDictionary *)place
+{
+    // Get the place information from the given place
+    NSString *placeInformation = [place objectForKey:FLICKR_PLACE_NAME];
+    
+    // Search the place information for the first comma.
+    NSRange commaRange = [placeInformation rangeOfString:@","];
+    
+    if (commaRange.location != NSNotFound) {
+        return [placeInformation substringToIndex:commaRange.location];
+        
+    } else return  @"";
+}
+
++ (NSString *)parseRegion:(NSDictionary *)place
+{
+    // Get the place information from the given place
+    NSString *placeInformation = [place objectForKey:FLICKR_PLACE_NAME];
+    
+    // Search the place information for the first comma.
+    NSRange firstComma = [placeInformation rangeOfString:@","];
+    
+    // Return the description after the 1st comma
+    if (firstComma.location != NSNotFound) {
+        return [placeInformation substringFromIndex:firstComma.location +1];
+    } else return  @"";
+}
+
 @end

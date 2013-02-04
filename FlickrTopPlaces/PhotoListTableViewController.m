@@ -8,11 +8,12 @@
 
 #import "PhotoListTableViewController.h"
 #import "FlickrPhotoViewController.h"
+#import "MapViewController.h"
+#import "FlickrPhotoAnnotation.h"
 #import "FlickrAPIKey.h"
 #import "FlickrFetcher.h"
 
-@interface PhotoListTableViewController ()
-
+@interface PhotoListTableViewController () <MapViewControllerDelegate>
 @end
 
 @implementation PhotoListTableViewController
@@ -28,14 +29,109 @@
 {
     if (_photoList != photoList) {
         _photoList = photoList;
+        
+        // Update the detail view
+        [self updateSplitViewDetail];
         // Model changed, so update our View (the table)
         [self.tableView reloadData];
     }
 }
 
+- (void)updateSplitViewDetail
+{
+    MapViewController *mapVC = [self splitViewMapViewController];
+    mapVC.delegate = self;
+    mapVC.zoomToRegion = YES;
+    mapVC.annotations = [self mapAnnotations];
+}
+
+- (MapViewController *)splitViewMapViewController
+{
+    id detail = [self.splitViewController.viewControllers lastObject];
+    id mapVC = nil;
+    
+    // The detail view might be embedded in a Navigation Controller
+    if ([detail isKindOfClass:[UINavigationController class]]) {
+        UINavigationController *nc = (UINavigationController *)detail;
+        if ([nc.topViewController isKindOfClass:[MapViewController class]]) {
+            mapVC = nc.topViewController;
+        }
+    }
+    // MapViewController directly linked to the SplitViewController
+    else if ([detail isKindOfClass:[MapViewController class]]) {
+        mapVC = detail;
+    }
+    
+    return mapVC;
+}
+
+- (NSArray *)mapAnnotations
+{
+    NSMutableArray *annotations = [NSMutableArray arrayWithCapacity:[self.photoList count]];
+    for (NSDictionary *photo in self.photoList) {
+        [annotations addObject:[FlickrPhotoAnnotation annotationForPhoto:photo]];
+    }
+    return annotations;
+}
+
+#pragma mark - MapViewControllerDelegate
+
+// Return a thumbnail image for an annotation
+- (UIImage *)mapViewController:(MapViewController *)sender imageForAnnotation:(id <MKAnnotation>)annotation
+{
+    FlickrPhotoAnnotation *fpa = (FlickrPhotoAnnotation *)annotation;
+    NSURL *url = [FlickrFetcher  urlForPhoto:fpa.photo format:FlickrPhotoFormatSquare];
+    NSData *data = [NSData dataWithContentsOfURL:url];
+    
+    return data ? [UIImage imageWithData:data] : nil;
+}
+
+// Compute the region to show on the map for annotations
+-(MKCoordinateRegion) computeMapRegion:(NSArray *)annotations sender:(id)sender
+{
+    MKCoordinateRegion region;
+    CLLocationDegrees minLatitude = 100.0f;    // -90 < lat < 90
+    CLLocationDegrees minLongitude = 200.0f;   // -180 < lon < 180
+    CLLocationDegrees maxLatitude = -100.0f;
+    CLLocationDegrees maxLongitude = -200.0f;
+    
+    for (NSDictionary *photo in self.photoList)
+    {
+        CLLocationDegrees photoLat = [[photo objectForKey:FLICKR_LATITUDE] doubleValue];
+        CLLocationDegrees photoLon = [[photo objectForKey:FLICKR_LONGITUDE] doubleValue];
+        //NSLog(@"Lat: %f  Lon: %f",photoLat,photoLon);
+        
+        if (photoLat < minLatitude) minLatitude = photoLat;
+        if (photoLat > maxLatitude) maxLatitude = photoLat;
+        if (photoLon < minLongitude) minLongitude = photoLon;
+        if (photoLon > maxLongitude) maxLongitude = photoLon;
+    }
+    CLLocation *lowerLeft = [[CLLocation alloc]initWithLatitude:minLatitude longitude:minLongitude];
+    CLLocation *upperRight = [[CLLocation alloc]initWithLatitude:maxLatitude longitude:maxLongitude];
+    
+    CLLocationDistance distance = 2.0 *  [lowerLeft distanceFromLocation:upperRight];
+    
+    // Minimum distance is 1000 meters
+    if (distance < 1000.0)
+    {
+        distance = 1000.0;
+    }
+    
+    CLLocationCoordinate2D midPoint = CLLocationCoordinate2DMake((minLatitude + maxLatitude)/2.0, (minLongitude + maxLongitude)/2.0);
+    region= MKCoordinateRegionMakeWithDistance(midPoint, distance, distance);
+    
+    return region;    
+}
+
+#pragma mark - View Controller Life cycle
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear: animated];
 
     // Show the spinner while we load the data from Flickr
     UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
@@ -60,6 +156,7 @@
         });
     });
 }
+
 
 - (void)didReceiveMemoryWarning
 {
@@ -158,6 +255,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    // TODO Change this since the PhotoViewController is not there anymore
     id detailViewController = [self.splitViewController.viewControllers lastObject];
     if(detailViewController) {
         NSDictionary *aPhoto = self.photoList[indexPath.row];
