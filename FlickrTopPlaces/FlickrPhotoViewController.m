@@ -22,6 +22,7 @@
 @end
 
 @implementation FlickrPhotoViewController
+@synthesize splitViewBarButtonItem = _splitViewBarButtonItem;   // implementation of SplitViewBarButtonItemPresenter protocol
 @synthesize imageView = _imageView;
 @synthesize scrollView = _scrollView;
 @synthesize toolbar = _toolbar;
@@ -150,6 +151,22 @@
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView
 {
     return self.imageView;
+}
+
+#pragma mark - SplitViewBarButtonItemPresenter
+
+- (void)setSplitViewBarButtonItem:(UIBarButtonItem *)splitViewBarButtonItem
+{
+    if (splitViewBarButtonItem != _splitViewBarButtonItem) {
+        [self handleSplitViewBarButtonItem:splitViewBarButtonItem];
+    }
+}
+
+- (void)handleSplitViewBarButtonItem:(UIBarButtonItem *)splitViewBarButtonItem
+{
+    // We don't want a "master view" button since the photos are displayed inside a NavigationController,
+    // i.e. there is already a back button available for the user to go back to the map view
+    _splitViewBarButtonItem = splitViewBarButtonItem;
 }
 
 @end

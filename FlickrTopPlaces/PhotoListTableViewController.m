@@ -43,6 +43,7 @@
     mapVC.delegate = self;
     mapVC.zoomToRegion = YES;
     mapVC.annotations = [self mapAnnotations];
+    mapVC.title = [self.place objectForKey:FLICKR_PLACE_NAME];
 }
 
 - (MapViewController *)splitViewMapViewController
@@ -255,20 +256,12 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    // TODO Change this since the PhotoViewController is not there anymore
-    id detailViewController = [self.splitViewController.viewControllers lastObject];
-    if(detailViewController) {
-        NSDictionary *aPhoto = self.photoList[indexPath.row];
-        
-        // Save the photo in the recents list
-        [self addPhotoToRecentList:aPhoto];
-        
-        // Sets the photo to display
-        [detailViewController setPhoto:aPhoto];
-        
-        // Refresh the display of the detail view
-        [detailViewController refreshDisplay];
-    }
+
+}
+
+- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath
+{
+
 }
 
 #pragma mark - Prepare Segue
@@ -278,13 +271,12 @@
     if ([segue.identifier isEqualToString:@"Show Single Photo"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
         NSDictionary *aPhoto = self.photoList[indexPath.row];
-
+        
         // Save the photo in the recents list
         [self addPhotoToRecentList:aPhoto];
-
+        
         // Sets the photo to display
         [segue.destinationViewController setPhoto:aPhoto];
-        
     }
 }
 

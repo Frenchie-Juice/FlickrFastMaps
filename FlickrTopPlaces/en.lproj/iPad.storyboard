@@ -101,6 +101,9 @@
                                     </subviews>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 </view>
+                                <connections>
+                                    <segue destination="KfP-0t-8Fl" kind="push" identifier="Reload Recent Photo" splitViewControllerTargetIndex="1" id="ec1-dM-690"/>
+                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <connections>
@@ -168,6 +171,9 @@
                                     </subviews>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 </view>
+                                <connections>
+                                    <segue destination="KfP-0t-8Fl" kind="push" identifier="Show Single Photo" splitViewControllerTargetIndex="1" id="WQL-7V-Xzz"/>
+                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <connections>
@@ -241,11 +247,12 @@
                     <navigationItem key="navigationItem" id="Tit-6x-Xj8"/>
                     <connections>
                         <outlet property="mapView" destination="vei-s2-U8l" id="6sE-ks-o2M"/>
+                        <segue destination="vWE-ex-hlM" kind="push" identifier="Show Annotation Photo" id="fzx-wD-Qg5"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dnc-ys-KU3" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1975" y="72"/>
+            <point key="canvasLocation" x="-1703" y="168"/>
         </scene>
         <!--Flickr Photo View Controller-->
         <scene sceneID="SEJ-Xa-7ZQ">
@@ -256,11 +263,11 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFill" minimumZoomScale="0.20000000298023224" maximumZoomScale="3" id="Xjf-c0-Uhr">
-                                <rect key="frame" x="0.0" y="44" width="808" height="1137"/>
+                                <rect key="frame" x="0.0" y="44" width="808" height="1136"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="TopLeft" id="PUO-ek-Qny">
-                                        <rect key="frame" x="0.0" y="0.0" width="768" height="1117"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="768" height="1116"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     </imageView>
                                 </subviews>
@@ -278,6 +285,7 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
+                    <navigationItem key="navigationItem" id="FJL-iP-CE3"/>
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="blackTranslucent"/>
                     <connections>
                         <outlet property="imageView" destination="PUO-ek-Qny" id="BQL-RE-HYs"/>
@@ -290,7 +298,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hqJ-Pv-SpG" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2092" y="-523"/>
+            <point key="canvasLocation" x="819" y="-2665"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="pXv-R5-4h0">
@@ -309,6 +317,70 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="AKZ-Gv-D2r" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-2949" y="72"/>
+        </scene>
+        <!--Flickr Photo View Controller-->
+        <scene sceneID="Zrl-Xs-zib">
+            <objects>
+                <viewController wantsFullScreenLayout="YES" id="vWE-ex-hlM" customClass="FlickrPhotoViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="wLL-mo-9pb">
+                        <rect key="frame" x="0.0" y="64" width="768" height="960"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFill" minimumZoomScale="0.20000000298023224" maximumZoomScale="3" id="ScE-WM-7Lk">
+                                <rect key="frame" x="0.0" y="0.0" width="808" height="1136"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <imageView userInteractionEnabled="NO" contentMode="TopLeft" id="jOs-16-Rvq">
+                                        <rect key="frame" x="0.0" y="0.0" width="768" height="1116"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    </imageView>
+                                </subviews>
+                            </scrollView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="cyW-5e-uoV"/>
+                    <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="blackTranslucent"/>
+                    <connections>
+                        <outlet property="imageView" destination="jOs-16-Rvq" id="aSr-TW-Ri9"/>
+                        <outlet property="scrollView" destination="ScE-WM-7Lk" id="m3g-CJ-ebr"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="J0S-6s-dRL" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-682" y="173"/>
+        </scene>
+        <!--Flickr Photo View Controller-->
+        <scene sceneID="WvV-2P-7SM">
+            <objects>
+                <viewController wantsFullScreenLayout="YES" id="KfP-0t-8Fl" customClass="FlickrPhotoViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Spc-J5-In6">
+                        <rect key="frame" x="0.0" y="64" width="768" height="911"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFill" minimumZoomScale="0.20000000298023224" maximumZoomScale="3" id="cWi-Tx-sxa">
+                                <rect key="frame" x="0.0" y="0.0" width="808" height="1087"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <imageView userInteractionEnabled="NO" contentMode="TopLeft" id="XQv-xO-CFY">
+                                        <rect key="frame" x="0.0" y="0.0" width="768" height="1067"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    </imageView>
+                                </subviews>
+                            </scrollView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="daQ-9U-qen"/>
+                    <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="blackTranslucent"/>
+                    <connections>
+                        <outlet property="imageView" destination="XQv-xO-CFY" id="dYM-qE-3Mr"/>
+                        <outlet property="scrollView" destination="cWi-Tx-sxa" id="UIo-9n-9a1"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="K6M-j1-OmZ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-405" y="-1523"/>
         </scene>
     </scenes>
     <classes>
@@ -346,4 +418,7 @@
         <simulatedOrientationMetrics key="orientation"/>
         <simulatedScreenMetrics key="destination"/>
     </simulatedMetricsContainer>
+    <inferredMetricsTieBreakers>
+        <segue reference="ec1-dM-690"/>
+    </inferredMetricsTieBreakers>
 </document>

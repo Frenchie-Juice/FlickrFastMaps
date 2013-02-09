@@ -43,6 +43,13 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (void)updateSplitViewDetail
+{
+    // This subclass doesn't need to update the detail view
+    // since we segue directly
+    return;
+}
+
 #pragma mark - Table view data source
 
 //- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -105,7 +112,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    [super tableView:tableView didSelectRowAtIndexPath:indexPath ];
+
 }
 
 #pragma mark - Prepare Segue

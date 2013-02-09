@@ -51,6 +51,7 @@
 {
     MapViewController *mapVC = [self splitViewMapViewController];
     mapVC.annotations = [self mapAnnotations];
+    mapVC.title = @"Flickr Top Places";
 }
 
 - (MapViewController *)splitViewMapViewController

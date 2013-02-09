@@ -21,4 +21,5 @@
 @property (nonatomic, strong) NSArray *annotations; // of id <MKAnnotation>
 @property (nonatomic, weak) id <MapViewControllerDelegate> delegate;
 @property (nonatomic) BOOL zoomToRegion;
+
 @end
