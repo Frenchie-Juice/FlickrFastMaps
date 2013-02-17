@@ -14,9 +14,6 @@
 @interface FlickrPhotoViewController () <UIScrollViewDelegate>
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
-@property (weak, nonatomic) IBOutlet UIToolbar *toolbar;
-@property (weak, nonatomic) IBOutlet UIBarButtonItem *titleButton;
-@property (weak, nonatomic) IBOutlet UIBarButtonItem *spinnerButton;
 @property (strong, nonatomic) UIActivityIndicatorView *spinner;
 @property (strong, nonatomic) DataCache *photoCache;
 @end
@@ -25,9 +22,6 @@
 @synthesize splitViewBarButtonItem = _splitViewBarButtonItem;   // implementation of SplitViewBarButtonItemPresenter protocol
 @synthesize imageView = _imageView;
 @synthesize scrollView = _scrollView;
-@synthesize toolbar = _toolbar;
-@synthesize titleButton = _titleButton;
-@synthesize spinnerButton = _spinnerButton;
 @synthesize spinner = _spinner;
 @synthesize photoCache = _photoCache;
 @synthesize photo = _photo;
@@ -67,9 +61,17 @@
     [super viewDidLoad];
     
     self.scrollView.delegate = self;
-    self.title = [self.photo objectForKey:FLICKR_PHOTO_TITLE];
-    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     
+    // Setup a title that fits on screen
+    NSString *title = [self.photo objectForKey:FLICKR_PHOTO_TITLE];
+    title = [title substringToIndex: MIN(25, [title length])];
+    self.title = title;
+
+    // Create the spinner button
+    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
+
+    // Create the photo cache
     self.photoCache = [DataCache cacheForFolder:@"FlickrPhotoCache"];
 }
 
@@ -83,12 +85,6 @@
 {
     // Show the spinner while we load the data from Flickr
     [self.spinner startAnimating];
-    
-    if (self.splitViewController) // in iPad mode
-        self.spinnerButton.customView = self.spinner;
-    else // in iPhone mode
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
-    
     
     dispatch_queue_t downloadQueue = dispatch_queue_create("flickr fetcher", NULL);
     dispatch_async(downloadQueue, ^{
@@ -118,14 +114,8 @@
             // Fit the image in the view
             [self fillView];
             
-            // Stop the spinner wheel (iPhone mode)
-            self.navigationItem.rightBarButtonItem = nil;
-            
-            // Stop the spinner wheel (iPad mode)
+            // Stop the spinner wheel
             [self.spinner stopAnimating];
-            
-            // Set the title of the image on the iPad
-            self.titleButton.title = [self.photo objectForKey:FLICKR_PHOTO_TITLE];
             
         });
     });

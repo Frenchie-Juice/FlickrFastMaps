@@ -10,14 +10,15 @@
 #import <MapKit/MapKit.h>
 #import "SplitViewBarButtonItemPresenter.h"
 
-@class MapViewController;
+@class PhotoListMapViewController;
 
 @protocol MapViewControllerDelegate <NSObject>
-- (UIImage *)mapViewController:(MapViewController *)sender imageForAnnotation:(id <MKAnnotation>)annotation;
--(MKCoordinateRegion) computeMapRegion:(NSArray *)annotations sender:(id)sender;
+- (NSData *) mapViewController:(PhotoListMapViewController *)sender imageDataForAnnotation:(id <MKAnnotation>)annotation;
+- (MKCoordinateRegion) computeMapRegion:(NSArray *)annotations sender:(id)sender;
+- (void) mapViewController:(PhotoListMapViewController *)sender displayPhotoForAnnotation:(id <MKAnnotation>)annotation;
 @end
 
-@interface MapViewController : UIViewController <SplitViewBarButtonItemPresenter>
+@interface PhotoListMapViewController : UIViewController <SplitViewBarButtonItemPresenter>
 @property (nonatomic, strong) NSArray *annotations; // of id <MKAnnotation>
 @property (nonatomic, weak) id <MapViewControllerDelegate> delegate;
 @property (nonatomic) BOOL zoomToRegion;

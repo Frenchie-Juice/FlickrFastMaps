@@ -8,62 +8,73 @@
 
 #import "PhotoListTableViewController.h"
 #import "FlickrPhotoViewController.h"
-#import "MapViewController.h"
+#import "PhotoListMapViewController.h"
 #import "FlickrPhotoAnnotation.h"
 #import "FlickrAPIKey.h"
 #import "FlickrFetcher.h"
 
 @interface PhotoListTableViewController () <MapViewControllerDelegate>
+@property (weak, nonatomic) IBOutlet UIActivityIndicatorView *spinner;
 @end
 
 @implementation PhotoListTableViewController
 @synthesize place = _place;
 @synthesize photoList = _photoList;
+@synthesize spinner = _spinner;
 
 #define NB_OF_PHOTOS 50
 #define RECENTS_MAX_LIST_SIZE 20
 #define RECENT_PHOTOS_KEY @"FlickrPhotos.MostRecent"
 
+#pragma mark - Load photos and annotations
 
 - (void)setPhotoList:(NSArray *)photoList
 {
     if (_photoList != photoList) {
         _photoList = photoList;
         
-        // Update the detail view
-        [self updateSplitViewDetail];
+        // Update the detail view if we have one
+        if (self.splitViewController) {
+            [self updateSplitViewDetail];
+        }
+
         // Model changed, so update our View (the table)
         [self.tableView reloadData];
     }
 }
 
-- (void)updateSplitViewDetail
+- (void)addPhotoToRecentList:(NSDictionary *)aPhoto
 {
-    MapViewController *mapVC = [self splitViewMapViewController];
-    mapVC.delegate = self;
-    mapVC.zoomToRegion = YES;
-    mapVC.annotations = [self mapAnnotations];
-    mapVC.title = [self.place objectForKey:FLICKR_PLACE_NAME];
-}
-
-- (MapViewController *)splitViewMapViewController
-{
-    id detail = [self.splitViewController.viewControllers lastObject];
-    id mapVC = nil;
+    // Get the user defaults
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     
-    // The detail view might be embedded in a Navigation Controller
-    if ([detail isKindOfClass:[UINavigationController class]]) {
-        UINavigationController *nc = (UINavigationController *)detail;
-        if ([nc.topViewController isKindOfClass:[MapViewController class]]) {
-            mapVC = nc.topViewController;
+    // Get an array of recent photos
+    NSMutableArray *recentPhotos = [[defaults objectForKey:RECENT_PHOTOS_KEY] mutableCopy];
+    if(!recentPhotos)recentPhotos = [NSMutableArray array];
+    
+    // Get the unique photo ID
+    NSString *photoId = [aPhoto objectForKey:FLICKR_PHOTO_ID];
+    
+    // We check if the photo is already in the list of most recent
+    for (NSDictionary *photo in recentPhotos) {
+        if ([[photo objectForKey:FLICKR_PHOTO_ID] isEqualToString:photoId]) {
+            // Remove the old photo
+            [recentPhotos removeObject:photo];
+            break;
         }
     }
-    // MapViewController directly linked to the SplitViewController
-    else if ([detail isKindOfClass:[MapViewController class]]) {
-        mapVC = detail;
+    // Add the new photo at the top of the list
+    [recentPhotos insertObject:aPhoto atIndex:0];
+    
+    // Check that we don't exceed the allowed number of recent photos
+    if (recentPhotos.count > RECENTS_MAX_LIST_SIZE) {
+        [recentPhotos removeObjectAtIndex:RECENTS_MAX_LIST_SIZE];
     }
     
-    return mapVC;
+    // Store the new array of most recent photos
+    [defaults setObject:recentPhotos
+                 forKey:RECENT_PHOTOS_KEY];
+    [defaults synchronize];
 }
 
 - (NSArray *)mapAnnotations
@@ -75,16 +86,52 @@
     return annotations;
 }
 
+#pragma mark - IPad detail View Refresh
+
+- (void)updateSplitViewDetail
+{
+    PhotoListMapViewController *mapVC = [self splitViewMapViewController];
+    mapVC.delegate = self;
+    mapVC.zoomToRegion = YES;
+    mapVC.annotations = [self mapAnnotations];
+    mapVC.title = [self.place objectForKey:FLICKR_PLACE_NAME];
+}
+
+- (PhotoListMapViewController *)splitViewMapViewController
+{
+    id detail = [self.splitViewController.viewControllers lastObject];
+    id mapVC = nil;
+    
+    // The detail view might be embedded in a Navigation Controller
+    if ([detail isKindOfClass:[UINavigationController class]]) {
+        UINavigationController *nc = (UINavigationController *)detail;
+        if ([nc.topViewController isKindOfClass:[PhotoListMapViewController class]]) {
+            mapVC = nc.topViewController;
+        }
+    }
+    // MapViewController directly linked to the SplitViewController
+    else if ([detail isKindOfClass:[PhotoListMapViewController class]]) {
+        mapVC = detail;
+    }
+    
+    return mapVC;
+}
+
+
 #pragma mark - MapViewControllerDelegate
 
 // Return a thumbnail image for an annotation
-- (UIImage *)mapViewController:(MapViewController *)sender imageForAnnotation:(id <MKAnnotation>)annotation
+- (NSData *)mapViewController:(PhotoListMapViewController *)sender imageDataForAnnotation:(id <MKAnnotation>)annotation
 {
     FlickrPhotoAnnotation *fpa = (FlickrPhotoAnnotation *)annotation;
-    NSURL *url = [FlickrFetcher  urlForPhoto:fpa.photo format:FlickrPhotoFormatSquare];
-    NSData *data = [NSData dataWithContentsOfURL:url];
-    
-    return data ? [UIImage imageWithData:data] : nil;
+    return [FlickrFetcher thumbnailForPhoto:fpa.photo];
+}
+
+- (void) mapViewController:(PhotoListMapViewController *)sender displayPhotoForAnnotation:(id<MKAnnotation>)annotation
+{
+    NSDictionary *photo =  ((FlickrPhotoAnnotation *)annotation).photo;
+    // Perform a segue to show the photo
+    [self performSegueWithIdentifier:@"Show Single Photo" sender:photo];
 }
 
 // Compute the region to show on the map for annotations
@@ -125,6 +172,7 @@
 }
 
 #pragma mark - View Controller Life cycle
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -135,9 +183,7 @@
     [super viewWillAppear: animated];
 
     // Show the spinner while we load the data from Flickr
-    UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    [spinner startAnimating];
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:spinner];
+    [self.spinner startAnimating];
     
     // Get photos info for this place and query in a different thread
     dispatch_queue_t downloadQueue = dispatch_queue_create("flickr downloader", NULL);
@@ -153,7 +199,7 @@
             // Store the new sorted array
             self.photoList = [photos sortedArrayUsingDescriptors:descriptors];
             // Stop the spinning wheel
-            self.navigationItem.rightBarButtonItem = nil;
+            [self.spinner stopAnimating];
         });
     });
 }
@@ -166,12 +212,6 @@
 }
 
 #pragma mark - Table view data source
-
-//- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-//{
-//    // Return the number of sections.
-//    return 0;
-//}
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
@@ -189,68 +229,49 @@
                                       reuseIdentifier:CellIdentifier];
     }
     
-    // Configure the cell...
+    // Get the photo metadata
     NSDictionary *aPhoto = self.photoList[indexPath.row];
     
-    NSString *title = [aPhoto valueForKey:FLICKR_PHOTO_TITLE];
-    NSString *description = [aPhoto valueForKeyPath:FLICKR_PHOTO_DESCRIPTION];
+    // Create spinning 'wait' indicator
+	UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    [spinner startAnimating];
+
+    // Need to create a background image in order to make the spinner visible
+    UIImage *whiteBckgnd = [self imageWithColor: [UIColor whiteColor]];
+    cell.imageView.image = whiteBckgnd;
+    [cell.imageView addSubview:spinner];
     
+    // Get thumbnail in separate thread
+    dispatch_queue_t thumbnailQueue = dispatch_queue_create("thumbnail downloader", NULL);
+    dispatch_async(thumbnailQueue, ^{
+        NSData *imageData = [FlickrFetcher thumbnailForPhoto:aPhoto];
+        
+        // Update cell image view in main thread
+		dispatch_async(dispatch_get_main_queue(), ^{
+            [spinner stopAnimating];
+            UIImage *image = [UIImage imageWithData:imageData];
+            cell.imageView.image = image;
+        });
+    });
+    
+    // Set the cell's title
+    NSString *title = [aPhoto valueForKey:FLICKR_PHOTO_TITLE];
     cell.textLabel.text = title;
     if ([[title stringByTrimmingCharactersInSet:
           [NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""]) {
         cell.textLabel.text = @"Unknown";
     }
-         
+    
+    // Set the cell's subtitle
+    NSString *description = [aPhoto valueForKeyPath:FLICKR_PHOTO_DESCRIPTION];
     cell.detailTextLabel.text = description;
     if ([[description stringByTrimmingCharactersInSet:
           [NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""]) {
         cell.detailTextLabel.text = @"No description";
     }
-         
-    //NSLog(@"%@", aPhoto);
-    
 
     return cell;
 }
-
-/*
-// Override to support conditional editing of the table view.
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the specified item to be editable.
-    return YES;
-}
-*/
-
-/*
-// Override to support editing the table view.
-- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    if (editingStyle == UITableViewCellEditingStyleDelete) {
-        // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    }   
-    else if (editingStyle == UITableViewCellEditingStyleInsert) {
-        // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-    }   
-}
-*/
-
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-{
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
 
 #pragma mark - Table view delegate
 
@@ -269,8 +290,16 @@
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     if ([segue.identifier isEqualToString:@"Show Single Photo"]) {
-        NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
-        NSDictionary *aPhoto = self.photoList[indexPath.row];
+        NSDictionary *aPhoto = nil;
+        // Coming from an annotation accessory click
+        if ([sender isKindOfClass:[NSDictionary class]]) {
+            aPhoto = (NSDictionary *)sender;
+        }
+        // Coming from a table click
+        else {
+            NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
+            aPhoto = self.photoList[indexPath.row];
+        }
         
         // Save the photo in the recents list
         [self addPhotoToRecentList:aPhoto];
@@ -278,41 +307,29 @@
         // Sets the photo to display
         [segue.destinationViewController setPhoto:aPhoto];
     }
+    else if ([segue.identifier isEqualToString:@"Show Photo List Map"]) {
+        PhotoListMapViewController *mapVC = segue.destinationViewController;
+        mapVC.delegate = self;
+        mapVC.zoomToRegion = YES;
+        mapVC.annotations = [self mapAnnotations];
+        mapVC.title = [self.place objectForKey:FLICKR_PLACE_NAME];
+    }
 }
 
-- (void)addPhotoToRecentList:(NSDictionary *)aPhoto
-{
-    // Get the user defaults
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    
-    // Get an array of recent photos
-    NSMutableArray *recentPhotos = [[defaults objectForKey:RECENT_PHOTOS_KEY] mutableCopy];
-    if(!recentPhotos)recentPhotos = [NSMutableArray array];
-    
-    // Get the unique photo ID
-    NSString *photoId = [aPhoto objectForKey:FLICKR_PHOTO_ID];
-    
-    // We check if the photo is already in the list of most recent
-    for (NSDictionary *photo in recentPhotos) {
-        if ([[photo objectForKey:FLICKR_PHOTO_ID] isEqualToString:photoId]) {
-            // Remove the old photo
-            [recentPhotos removeObject:photo];
-            break;
-        }
-    }
-    // Add the new photo at the top of the list
-    [recentPhotos insertObject:aPhoto atIndex:0];
-    
-    // Check that we don't exceed the allowed number of recent photos
-    if (recentPhotos.count > RECENTS_MAX_LIST_SIZE) {
-        [recentPhotos removeObjectAtIndex:RECENTS_MAX_LIST_SIZE];
-    }
-    
-    // Store the new array of most recent photos
-    [defaults setObject:recentPhotos
-                 forKey:RECENT_PHOTOS_KEY];
-    [defaults synchronize];
+#pragma mark - Utility methods
+                          
+- (UIImage *)imageWithColor:(UIColor *)color {
+    CGRect rect = CGRectMake(0.0f, 0.0f, 25.0f, 25.0f);
+    UIGraphicsBeginImageContext(rect.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+                              
+    CGContextSetFillColorWithColor(context, [color CGColor]);
+    CGContextFillRect(context, rect);
+                              
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+                              
+    return image;
 }
-
 
 @end

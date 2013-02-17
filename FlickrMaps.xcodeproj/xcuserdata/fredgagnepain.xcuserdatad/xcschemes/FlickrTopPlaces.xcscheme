@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "0ECD3324169BB2ED007EEC9B"
-               BuildableName = "FlickrTopPlaces.app"
-               BlueprintName = "FlickrTopPlaces"
-               ReferencedContainer = "container:FlickrTopPlaces.xcodeproj">
+               BuildableName = "FlickrMaps.app"
+               BlueprintName = "FlickrMaps"
+               ReferencedContainer = "container:FlickrMaps.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0ECD3324169BB2ED007EEC9B"
-            BuildableName = "FlickrTopPlaces.app"
-            BlueprintName = "FlickrTopPlaces"
-            ReferencedContainer = "container:FlickrTopPlaces.xcodeproj">
+            BuildableName = "FlickrMaps.app"
+            BlueprintName = "FlickrMaps"
+            ReferencedContainer = "container:FlickrMaps.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
@@ -52,9 +52,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0ECD3324169BB2ED007EEC9B"
-            BuildableName = "FlickrTopPlaces.app"
-            BlueprintName = "FlickrTopPlaces"
-            ReferencedContainer = "container:FlickrTopPlaces.xcodeproj">
+            BuildableName = "FlickrMaps.app"
+            BlueprintName = "FlickrMaps"
+            ReferencedContainer = "container:FlickrMaps.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -70,9 +70,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0ECD3324169BB2ED007EEC9B"
-            BuildableName = "FlickrTopPlaces.app"
-            BlueprintName = "FlickrTopPlaces"
-            ReferencedContainer = "container:FlickrTopPlaces.xcodeproj">
+            BuildableName = "FlickrMaps.app"
+            BlueprintName = "FlickrMaps"
+            ReferencedContainer = "container:FlickrMaps.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

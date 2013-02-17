@@ -122,4 +122,10 @@
     } else return  @"";
 }
 
++ (NSData *)thumbnailForPhoto:(NSDictionary *)photo
+{
+    NSURL *url = [FlickrFetcher  urlForPhoto:photo format:FlickrPhotoFormatSquare];
+    return [NSData dataWithContentsOfURL:url];
+}
+
 @end

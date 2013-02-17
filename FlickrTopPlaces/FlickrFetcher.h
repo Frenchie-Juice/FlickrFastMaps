@@ -32,5 +32,6 @@ typedef enum {
 + (NSString *)parseCountry:(NSDictionary *)place;
 + (NSString *)parseCity:(NSDictionary *)place;
 + (NSString *)parseRegion:(NSDictionary *)place;
++ (NSData *)thumbnailForPhoto:(NSDictionary *)photo;
 
 @end

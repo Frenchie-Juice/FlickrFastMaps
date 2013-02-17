@@ -8,80 +8,28 @@
 
 #import "TopPlacesTableViewController.h"
 #import "PhotoListTableViewController.h"
-#import "MapViewController.h"
+#import "TopPlacesMapViewController.h"
 #import "FlickrAPIKey.h"
 #import "FlickrFetcher.h"
 #import "FlickrPlaceAnnotation.h"
 
-@interface TopPlacesTableViewController ()
+@interface TopPlacesTableViewController () <TopPlacesMapViewControllerDelegate>
 @property (nonatomic, strong) NSArray *topPlaces;
 @property (nonatomic, strong) NSDictionary *placesByCountry;
 @property (nonatomic, strong) NSArray *sectionHeaders;
+@property (weak, nonatomic) IBOutlet UIActivityIndicatorView *spinner;
 @end
 
 @implementation TopPlacesTableViewController
 @synthesize topPlaces = _topPlaces;
 @synthesize placesByCountry = _placesByCountry;
 @synthesize sectionHeaders = _sectionHeaders;
+@synthesize spinner = _spinner;
 
-
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-}
-
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear: animated];
+#pragma mark - Load places and annotations
+- (IBAction)refreshTopPlaces:(id)sender {
+    self.topPlaces = nil;
     [self loadTopPlaces];
-}
-
-- (void)setTopPlaces:(NSArray *)topPlaces
-{
-    if (_topPlaces != topPlaces) {
-        _topPlaces = topPlaces;
-        
-        [self updateSplitViewDetail];
-        // Model changed, so update our View (the table)
-        if (self.tableView.window) [self.tableView reloadData];
-    }
-}
-
-- (void)updateSplitViewDetail
-{
-    MapViewController *mapVC = [self splitViewMapViewController];
-    mapVC.annotations = [self mapAnnotations];
-    mapVC.title = @"Flickr Top Places";
-}
-
-- (MapViewController *)splitViewMapViewController
-{
-    id detail = [self.splitViewController.viewControllers lastObject];
-    id mapVC = nil;
-    
-    // The detail view might be embedded in a Navigation Controller
-    if ([detail isKindOfClass:[UINavigationController class]]) {
-        UINavigationController *nc = (UINavigationController *)detail;
-        if ([nc.topViewController isKindOfClass:[MapViewController class]]) {
-            mapVC = nc.topViewController;
-        }
-    }
-    // MapViewController directly linked to the SplitViewController
-    else if ([detail isKindOfClass:[MapViewController class]]) {
-        mapVC = detail;
-    }
-    
-    return mapVC;
-}
-
-
-- (NSArray *)mapAnnotations
-{
-    NSMutableArray *annotations = [NSMutableArray arrayWithCapacity:[self.topPlaces count]];
-    for (NSDictionary *place in self.topPlaces) {
-        [annotations addObject:[FlickrPlaceAnnotation annotationForPlace:place]];
-    }
-    return annotations;
 }
 
 - (void)loadTopPlaces
@@ -93,15 +41,12 @@
     NSArray *sortDescriptors = [NSArray arrayWithObject:
                                 [NSSortDescriptor sortDescriptorWithKey:FLICKR_PLACE_NAME
                                                               ascending:YES]];
- 
+    
     // Show the spinner while we load the data from Flickr
-    UIActivityIndicatorView *spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-    [spinner startAnimating];
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:spinner];
+    [self.spinner startAnimating];
     
     dispatch_queue_t downloadQueue = dispatch_queue_create("flickr downloader", NULL);
     dispatch_async(downloadQueue, ^{
-    //dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0),^{
         // Set up the array of top places, organised by place descriptions
         NSArray *topPlaces = [[FlickrFetcher topPlaces]
                               sortedArrayUsingDescriptors:sortDescriptors];
@@ -135,11 +80,85 @@
             self.topPlaces = topPlaces;
             
             // Stop the spinner wheel
-            self.navigationItem.rightBarButtonItem = nil;
+            [self.spinner stopAnimating];
         });
     });
 }
 
+- (void)setTopPlaces:(NSArray *)topPlaces
+{
+    if (_topPlaces != topPlaces) {
+        _topPlaces = topPlaces;
+        
+        // Update the split view detail if one exists
+        if (self.splitViewController) {
+            [self updateSplitViewDetail];
+        }
+        
+        // Model changed, so update our View (the table)
+        if (self.tableView.window) [self.tableView reloadData];
+    }
+}
+
+- (NSArray *)mapAnnotations
+{
+    NSMutableArray *annotations = [NSMutableArray arrayWithCapacity:[self.topPlaces count]];
+    for (NSDictionary *place in self.topPlaces) {
+        [annotations addObject:[FlickrPlaceAnnotation annotationForPlace:place]];
+    }
+    return annotations;
+}
+
+#pragma mark - TopPlacesMapViewControllerDelegate
+
+- (void)mapViewController:(TopPlacesMapViewController *)sender displayPhotoListForAnnotation:(id<MKAnnotation>)annotation
+{
+    NSDictionary *place = ((FlickrPlaceAnnotation *)annotation).place;
+    [self performSegueWithIdentifier:@"Show Place Photos" sender:place];
+}
+
+#pragma mark - IPad detail View Refresh
+
+- (void)updateSplitViewDetail
+{
+    TopPlacesMapViewController *mapVC = [self splitViewMapViewController];
+    mapVC.annotations = [self mapAnnotations];
+    mapVC.title = @"Flickr Top Places";
+}
+
+- (TopPlacesMapViewController *)splitViewMapViewController
+{
+    id detail = [self.splitViewController.viewControllers lastObject];
+    id mapVC = nil;
+    
+    // The detail view might be embedded in a Navigation Controller
+    if ([detail isKindOfClass:[UINavigationController class]]) {
+        UINavigationController *nc = (UINavigationController *)detail;
+        if ([nc.topViewController isKindOfClass:[TopPlacesMapViewController class]]) {
+            mapVC = nc.topViewController;
+        }
+    }
+    // MapViewController directly linked to the SplitViewController
+    else if ([detail isKindOfClass:[TopPlacesMapViewController class]]) {
+        mapVC = detail;
+    }
+    
+    return mapVC;
+}
+
+
+#pragma mark - View Controller Life cycle
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear: animated];
+    [self loadTopPlaces];
+}
 
 - (void)didReceiveMemoryWarning
 {
@@ -250,14 +269,28 @@
 - (void) prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     if ([segue.identifier isEqualToString:@"Show Place Photos"]) {
-        NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
+        NSDictionary *aPlace = nil;
+        // Coming from an annotation accessory click
+        if ([sender isKindOfClass:[NSDictionary class]]) {
+            aPlace = (NSDictionary *)sender;
+        }
+        // Coming from a table click
+        else {
+            NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
+            // Identify the selected place from within the places by country dictionary
+            aPlace = [[self.placesByCountry valueForKey:
+                       [self.sectionHeaders objectAtIndex:indexPath.section]] objectAtIndex:indexPath.row];
+        }
         
-        // Identify the selected place from within the places by country dictionary
-        NSDictionary *aPlace =
-        [[self.placesByCountry valueForKey:
-          [self.sectionHeaders objectAtIndex:indexPath.section]] objectAtIndex:indexPath.row];
-        
-        [segue.destinationViewController setPlace:aPlace];
+        PhotoListTableViewController *destVC = segue.destinationViewController;
+        destVC.place = aPlace;
+        destVC.title = [aPlace objectForKey:FLICKR_PLACE_NAME];
+    }
+    else if ([segue.identifier isEqualToString:@"Show Top Places Map"]) {
+        TopPlacesMapViewController *mapVC = segue.destinationViewController;
+        mapVC.delegate = self;
+        mapVC.annotations = [self mapAnnotations];
+        mapVC.title = @"Top Places";
     }
 }
 
