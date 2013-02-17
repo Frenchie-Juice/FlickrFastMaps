@@ -121,6 +121,7 @@
 
 - (void)updateSplitViewDetail
 {
+    // TODO: do something in the detail view
     TopPlacesMapViewController *mapVC = [self splitViewMapViewController];
     mapVC.annotations = [self mapAnnotations];
     mapVC.title = @"Flickr Top Places";

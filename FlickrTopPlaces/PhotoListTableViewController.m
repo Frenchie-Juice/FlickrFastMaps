@@ -1,5 +1,5 @@
 //
-//  PlacePhotosTableViewController.m
+//  PhotoListTableViewController.m
 //  FlickrTopPlaces
 //
 //  Created by Fred Gagnepain on 2013-01-14.
@@ -33,11 +33,6 @@
     if (_photoList != photoList) {
         _photoList = photoList;
         
-        // Update the detail view if we have one
-        if (self.splitViewController) {
-            [self updateSplitViewDetail];
-        }
-
         // Model changed, so update our View (the table)
         [self.tableView reloadData];
     }
@@ -90,31 +85,49 @@
 
 - (void)updateSplitViewDetail
 {
-    PhotoListMapViewController *mapVC = [self splitViewMapViewController];
-    mapVC.delegate = self;
-    mapVC.zoomToRegion = YES;
-    mapVC.annotations = [self mapAnnotations];
-    mapVC.title = [self.place objectForKey:FLICKR_PLACE_NAME];
+    NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+    NSDictionary *aPhoto = self.photoList[indexPath.row];
+    
+    // Save the photo in the recents list
+    [self addPhotoToRecentList:aPhoto];
+    
+    // Get the detail view controller
+    FlickrPhotoViewController *destinationVC = [self splitViewDetailController];
+    
+    // Sets the photo to display
+    [destinationVC setPhoto:aPhoto];
 }
 
-- (PhotoListMapViewController *)splitViewMapViewController
+- (void)updateSplitViewDetailWithPhoto:(NSDictionary *)photo
+{
+    // Save the photo in the recents list
+    [self addPhotoToRecentList:photo];
+    
+    // Get the detail view controller
+    FlickrPhotoViewController *destinationVC = [self splitViewDetailController];
+    
+    // Sets the photo to display
+    [destinationVC setPhoto:photo];
+}
+
+- (FlickrPhotoViewController *)splitViewDetailController
 {
     id detail = [self.splitViewController.viewControllers lastObject];
-    id mapVC = nil;
+    id photoVC = nil;
     
     // The detail view might be embedded in a Navigation Controller
     if ([detail isKindOfClass:[UINavigationController class]]) {
         UINavigationController *nc = (UINavigationController *)detail;
-        if ([nc.topViewController isKindOfClass:[PhotoListMapViewController class]]) {
-            mapVC = nc.topViewController;
+        if ([nc.topViewController isKindOfClass:[FlickrPhotoViewController class]]) {
+            photoVC = nc.topViewController;
         }
     }
     // MapViewController directly linked to the SplitViewController
-    else if ([detail isKindOfClass:[PhotoListMapViewController class]]) {
-        mapVC = detail;
+    else if ([detail isKindOfClass:[FlickrPhotoViewController class]]) {
+        photoVC = detail;
     }
     
-    return mapVC;
+    return photoVC;
 }
 
 
@@ -130,8 +143,14 @@
 - (void) mapViewController:(PhotoListMapViewController *)sender displayPhotoForAnnotation:(id<MKAnnotation>)annotation
 {
     NSDictionary *photo =  ((FlickrPhotoAnnotation *)annotation).photo;
-    // Perform a segue to show the photo
-    [self performSegueWithIdentifier:@"Show Single Photo" sender:photo];
+    if (self.splitViewController) {
+        // iPad: update the detail view
+        [self updateSplitViewDetailWithPhoto:photo];
+    }
+    else {
+        // iPhone: perform a segue to show the photo
+        [self performSegueWithIdentifier:@"Show Single Photo" sender:photo];
+    }
 }
 
 // Compute the region to show on the map for annotations
@@ -277,7 +296,11 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-
+    // on iPhone, a segue shows the photo
+    // on iPad, the detail view is refreshed here
+    if (self.splitViewController) {
+        [self updateSplitViewDetail];
+    }
 }
 
 - (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath

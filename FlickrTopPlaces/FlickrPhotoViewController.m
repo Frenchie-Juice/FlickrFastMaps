@@ -26,6 +26,14 @@
 @synthesize photoCache = _photoCache;
 @synthesize photo = _photo;
 
+#pragma mark - Getters and Setters
+- (void)setPhoto:(NSDictionary *)photo
+{
+    _photo = photo;
+    
+    // Model changed, update our view
+    [self refreshDisplay];
+}
 
 
 #pragma mark - DataCache Management
@@ -62,11 +70,6 @@
     
     self.scrollView.delegate = self;
     
-    // Setup a title that fits on screen
-    NSString *title = [self.photo objectForKey:FLICKR_PHOTO_TITLE];
-    title = [title substringToIndex: MIN(25, [title length])];
-    self.title = title;
-
     // Create the spinner button
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.spinner];
@@ -83,6 +86,11 @@
 // Load a photo on screen
 - (void)refreshDisplay
 {
+    // Setup a title that fits on screen
+    NSString *title = [self.photo objectForKey:FLICKR_PHOTO_TITLE];
+    title = [title substringToIndex: MIN(25, [title length])];
+    self.title = title;
+    
     // Show the spinner while we load the data from Flickr
     [self.spinner startAnimating];
     
@@ -154,8 +162,15 @@
 
 - (void)handleSplitViewBarButtonItem:(UIBarButtonItem *)splitViewBarButtonItem
 {
-    // We don't want a "master view" button since the photos are displayed inside a NavigationController,
-    // i.e. there is already a back button available for the user to go back to the map view
+    NSMutableArray *toolbarItems = [[self.navigationItem leftBarButtonItems] mutableCopy];
+    if (!toolbarItems) {
+        toolbarItems = [[NSMutableArray alloc] init];
+    }
+    
+    if (_splitViewBarButtonItem) [toolbarItems removeObject:_splitViewBarButtonItem];
+    if (splitViewBarButtonItem) [toolbarItems insertObject:splitViewBarButtonItem atIndex:0];
+    [self.navigationItem setLeftBarButtonItems:toolbarItems];
+    
     _splitViewBarButtonItem = splitViewBarButtonItem;
 }
 

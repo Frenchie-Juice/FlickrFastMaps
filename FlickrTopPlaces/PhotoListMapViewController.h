@@ -18,7 +18,7 @@
 - (void) mapViewController:(PhotoListMapViewController *)sender displayPhotoForAnnotation:(id <MKAnnotation>)annotation;
 @end
 
-@interface PhotoListMapViewController : UIViewController <SplitViewBarButtonItemPresenter>
+@interface PhotoListMapViewController : UIViewController 
 @property (nonatomic, strong) NSArray *annotations; // of id <MKAnnotation>
 @property (nonatomic, weak) id <MapViewControllerDelegate> delegate;
 @property (nonatomic) BOOL zoomToRegion;
