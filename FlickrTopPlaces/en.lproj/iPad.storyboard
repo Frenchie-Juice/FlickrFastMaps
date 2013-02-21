@@ -58,7 +58,13 @@
                             <outlet property="delegate" destination="gma-qM-eu9" id="Cco-bb-5Jl"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Recent Photos" id="EIZ-Yb-XCr"/>
+                    <navigationItem key="navigationItem" title="Recent Photos" id="EIZ-Yb-XCr">
+                        <barButtonItem key="rightBarButtonItem" title="Map" id="quZ-BJ-8nr">
+                            <connections>
+                                <segue destination="zGq-CU-0fL" kind="push" identifier="Reload Recent Photos Map" id="lxo-Fo-zWN"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="blackTranslucent"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="whW-Na-U2Y" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -362,6 +368,34 @@
             </objects>
             <point key="canvasLocation" x="-648" y="-3233"/>
         </scene>
+        <!--Photo List Map View Controller-->
+        <scene sceneID="jFw-w5-FIr">
+            <objects>
+                <viewController id="zGq-CU-0fL" customClass="PhotoListMapViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Y5h-79-yrc">
+                        <rect key="frame" x="0.0" y="64" width="320" height="739"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" id="Sx9-Zk-MZ8">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="739"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <connections>
+                                    <outlet property="delegate" destination="zGq-CU-0fL" id="S0F-1c-8pQ"/>
+                                </connections>
+                            </mapView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="Nwm-va-gx0"/>
+                    <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="blackTranslucent"/>
+                    <connections>
+                        <outlet property="mapView" destination="Sx9-Zk-MZ8" id="vKa-2b-fpQ"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="105-Kr-2dh" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-648" y="-2013"/>
+        </scene>
     </scenes>
     <classes>
         <class className="FlickrPhotoViewController" superclassName="UIViewController">
@@ -398,6 +432,7 @@
         <class className="TopPlacesTableViewController" superclassName="UITableViewController">
             <source key="sourceIdentifier" type="project" relativePath="./Classes/TopPlacesTableViewController.h"/>
             <relationships>
+                <relationship kind="action" name="refreshTopPlaces:"/>
                 <relationship kind="outlet" name="spinner" candidateClass="UIActivityIndicatorView"/>
             </relationships>
         </class>
