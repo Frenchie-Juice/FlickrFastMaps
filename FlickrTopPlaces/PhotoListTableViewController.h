@@ -1,5 +1,5 @@
 //
-//  PlacePhotosTableViewController.h
+//  PhotoListTableViewController.h
 //  FlickrTopPlaces
 //
 //  Created by Fred Gagnepain on 2013-01-14.

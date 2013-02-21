@@ -27,7 +27,9 @@
     
     // Zoom to the region the photos come from
     if (self.zoomToRegion)
-        [self.mapView setRegion: [self.delegate computeMapRegion:self.annotations sender:self] animated:YES];
+        [self.mapView setVisibleMapRect:[self.delegate computeMapRect:self.annotations sender:self]
+                            edgePadding:UIEdgeInsetsMake(10, 10, 10, 10)
+                               animated:YES];
 }
 
 - (void)setMapView:(MKMapView *)mapView
@@ -115,13 +117,5 @@
     [self setMapView:nil];
     [super viewDidUnload];
 }
-
-#pragma mark - Autorotation
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-    return YES;
-}
-
 
 @end

@@ -153,41 +153,21 @@
     }
 }
 
-// Compute the region to show on the map for annotations
--(MKCoordinateRegion) computeMapRegion:(NSArray *)annotations sender:(id)sender
+// Compute the MKMapRect to show on the map for annotations
+- (MKMapRect)computeMapRect:(NSArray *)annotations sender:(id)sender
 {
-    MKCoordinateRegion region;
-    CLLocationDegrees minLatitude = 100.0f;    // -90 < lat < 90
-    CLLocationDegrees minLongitude = 200.0f;   // -180 < lon < 180
-    CLLocationDegrees maxLatitude = -100.0f;
-    CLLocationDegrees maxLongitude = -200.0f;
-    
-    for (NSDictionary *photo in self.photoList)
+    MKMapRect zoomRect = MKMapRectNull;
+    for (id<MKAnnotation> annotation in annotations)
     {
-        CLLocationDegrees photoLat = [[photo objectForKey:FLICKR_LATITUDE] doubleValue];
-        CLLocationDegrees photoLon = [[photo objectForKey:FLICKR_LONGITUDE] doubleValue];
-        //NSLog(@"Lat: %f  Lon: %f",photoLat,photoLon);
-        
-        if (photoLat < minLatitude) minLatitude = photoLat;
-        if (photoLat > maxLatitude) maxLatitude = photoLat;
-        if (photoLon < minLongitude) minLongitude = photoLon;
-        if (photoLon > maxLongitude) maxLongitude = photoLon;
+        MKMapPoint annotationPoint = MKMapPointForCoordinate(annotation.coordinate);
+        MKMapRect pointRect = MKMapRectMake(annotationPoint.x, annotationPoint.y, 0.1, 0.1);
+        if (MKMapRectIsNull(zoomRect)) {
+            zoomRect = pointRect;
+        } else {
+            zoomRect = MKMapRectUnion(zoomRect, pointRect);
+        }
     }
-    CLLocation *lowerLeft = [[CLLocation alloc]initWithLatitude:minLatitude longitude:minLongitude];
-    CLLocation *upperRight = [[CLLocation alloc]initWithLatitude:maxLatitude longitude:maxLongitude];
-    
-    CLLocationDistance distance = 2.0 *  [lowerLeft distanceFromLocation:upperRight];
-    
-    // Minimum distance is 1000 meters
-    if (distance < 1000.0)
-    {
-        distance = 1000.0;
-    }
-    
-    CLLocationCoordinate2D midPoint = CLLocationCoordinate2DMake((minLatitude + maxLatitude)/2.0, (minLongitude + maxLongitude)/2.0);
-    region= MKCoordinateRegionMakeWithDistance(midPoint, distance, distance);
-    
-    return region;    
+    return zoomRect;
 }
 
 #pragma mark - View Controller Life cycle

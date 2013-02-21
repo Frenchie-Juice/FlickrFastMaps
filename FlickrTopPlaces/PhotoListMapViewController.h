@@ -1,5 +1,5 @@
 //
-//  MapViewController.h
+//  PhotoListMapViewController.h
 //  FlickrTopPlaces
 //
 //  Created by Fred Gagnepain on 2013-01-30.
@@ -13,9 +13,9 @@
 @class PhotoListMapViewController;
 
 @protocol MapViewControllerDelegate <NSObject>
-- (NSData *) mapViewController:(PhotoListMapViewController *)sender imageDataForAnnotation:(id <MKAnnotation>)annotation;
-- (MKCoordinateRegion) computeMapRegion:(NSArray *)annotations sender:(id)sender;
-- (void) mapViewController:(PhotoListMapViewController *)sender displayPhotoForAnnotation:(id <MKAnnotation>)annotation;
+- (NSData *)mapViewController:(PhotoListMapViewController *)sender imageDataForAnnotation:(id <MKAnnotation>)annotation;
+- (void)mapViewController:(PhotoListMapViewController *)sender displayPhotoForAnnotation:(id <MKAnnotation>)annotation;
+- (MKMapRect)computeMapRect:(NSArray *)annotations sender:(id)sender;
 @end
 
 @interface PhotoListMapViewController : UIViewController 

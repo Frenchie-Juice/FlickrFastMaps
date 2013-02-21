@@ -16,7 +16,7 @@
 - (void) mapViewController:(TopPlacesMapViewController *)sender displayPhotoListForAnnotation:(id <MKAnnotation>)annotation;
 @end
 
-@interface TopPlacesMapViewController : UIViewController <SplitViewBarButtonItemPresenter>
+@interface TopPlacesMapViewController : UIViewController
 @property (nonatomic, strong) NSArray *annotations; // of id <MKAnnotation>
 @property (nonatomic, weak) id <TopPlacesMapViewControllerDelegate> delegate;
 

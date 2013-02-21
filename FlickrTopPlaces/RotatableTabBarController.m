@@ -1,5 +1,5 @@
 //
-//  DetailViewController.m
+//  RotatableTabBarController.m
 //  FlickrTopPlaces
 //
 //  Created by Fred Gagnepain on 2013-02-02.

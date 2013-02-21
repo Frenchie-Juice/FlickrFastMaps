@@ -14,7 +14,6 @@
 @end
 
 @implementation TopPlacesMapViewController
-@synthesize splitViewBarButtonItem = _splitViewBarButtonItem;   // implementation of SplitViewBarButtonItemPresenter protocol
 @synthesize mapView = _mapView;
 @synthesize annotations = _annotations;
 @synthesize delegate = _delegate;
@@ -90,36 +89,6 @@
 {
     [self setMapView:nil];
     [super viewDidUnload];
-}
-
-#pragma mark - SplitViewBarButtonItemPresenter
-
-- (void)setSplitViewBarButtonItem:(UIBarButtonItem *)splitViewBarButtonItem
-{
-    if (splitViewBarButtonItem != _splitViewBarButtonItem) {
-        [self handleSplitViewBarButtonItem:splitViewBarButtonItem];
-    }
-}
-
-- (void)handleSplitViewBarButtonItem:(UIBarButtonItem *)splitViewBarButtonItem
-{
-    NSMutableArray *toolbarItems = [[self.navigationItem leftBarButtonItems] mutableCopy];
-    if (!toolbarItems) {
-        toolbarItems = [[NSMutableArray alloc] init];
-    }
-    
-    if (_splitViewBarButtonItem) [toolbarItems removeObject:_splitViewBarButtonItem];
-    if (splitViewBarButtonItem) [toolbarItems insertObject:splitViewBarButtonItem atIndex:0];
-    [self.navigationItem setLeftBarButtonItems:toolbarItems];
-    
-    _splitViewBarButtonItem = splitViewBarButtonItem;
-}
-
-#pragma mark - Autorotation
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-    return YES;
 }
 
 @end

@@ -1,8 +1,7 @@
 //
 //  SplitViewBarButtonItemPresenter.h
-//  Psychologist
+//  Based on CS193p class
 //
-//  Created by CS193p Instructor.
 //  Copyright (c) 2011 Stanford University. All rights reserved.
 //
 

@@ -1,5 +1,5 @@
 //
-//  RecentsTableViewController.m
+//  RecentPhotoListTableViewController.m
 //  FlickrTopPlaces
 //
 //  Created by Fred Gagnepain on 2013-01-13.
@@ -21,6 +21,7 @@
 
 - (void)viewDidLoad
 {
+    [super viewDidLoad];
 }
 
 - (void)viewWillAppear:(BOOL)animated
