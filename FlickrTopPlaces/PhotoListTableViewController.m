@@ -8,12 +8,11 @@
 
 #import "PhotoListTableViewController.h"
 #import "FlickrPhotoViewController.h"
-#import "PhotoListMapViewController.h"
 #import "FlickrPhotoAnnotation.h"
 #import "FlickrAPIKey.h"
 #import "FlickrFetcher.h"
 
-@interface PhotoListTableViewController () <MapViewControllerDelegate>
+@interface PhotoListTableViewController ()
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *spinner;
 @end
 
@@ -307,7 +306,7 @@
         // Save the photo in the recents list
         [self addPhotoToRecentList:aPhoto];
         
-        // Sets the photo to display
+        // Set the photo to display
         [segue.destinationViewController setPhoto:aPhoto];
     }
     else if ([segue.identifier isEqualToString:@"Show Photo List Map"]) {

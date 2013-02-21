@@ -116,7 +116,13 @@
                             <outlet property="delegate" destination="yfC-aU-Okz" id="Rip-Gv-cVJ"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Recent Photos" id="qLd-Pz-eED"/>
+                    <navigationItem key="navigationItem" title="Recent Photos" id="qLd-Pz-eED">
+                        <barButtonItem key="rightBarButtonItem" title="Map" id="a9F-av-o2E">
+                            <connections>
+                                <segue destination="27w-tM-8Uq" kind="push" identifier="Reload Recent Photos Map" id="gEQ-IQ-zH5"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bv1-GW-eiy" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -332,6 +338,34 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="d5E-GZ-Zzj" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="390" y="-2050"/>
+        </scene>
+        <!--Photo List Map View Controller-->
+        <scene sceneID="bxx-vd-ocS">
+            <objects>
+                <viewController id="27w-tM-8Uq" customClass="PhotoListMapViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="4UO-xI-LtX">
+                        <rect key="frame" x="0.0" y="64" width="320" height="367"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" id="6VI-7Y-gJl">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="367"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <connections>
+                                    <outlet property="delegate" destination="27w-tM-8Uq" id="Mdl-zC-Twp"/>
+                                </connections>
+                            </mapView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="SqJ-TW-3hc"/>
+                    <simulatedStatusBarMetrics key="simulatedStatusBarMetrics"/>
+                    <connections>
+                        <outlet property="mapView" destination="6VI-7Y-gJl" id="wIX-70-DGo"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="U7j-bX-aZP" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="402" y="-310"/>
         </scene>
     </scenes>
     <classes>

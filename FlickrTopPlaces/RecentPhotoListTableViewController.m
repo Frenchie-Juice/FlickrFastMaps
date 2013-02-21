@@ -8,7 +8,9 @@
 
 #import "RecentPhotoListTableViewController.h"
 #import "PhotoListTableViewController.h"
+#import "PhotoListMapViewController.h"
 #import "FlickrPhotoViewController.h"
+#import "FlickrPhotoAnnotation.h"
 
 @interface RecentPhotoListTableViewController ()
 
@@ -65,15 +67,47 @@
     [super tableView:tableView didSelectRowAtIndexPath:indexPath];
 }
 
+#pragma mark - MapViewControllerDelegate
+
+- (void) mapViewController:(PhotoListMapViewController *)sender displayPhotoForAnnotation:(id<MKAnnotation>)annotation
+{
+    NSDictionary *photo =  ((FlickrPhotoAnnotation *)annotation).photo;
+    if (self.splitViewController) {
+        // iPad: update the detail view
+        [self updateSplitViewDetailWithPhoto:photo];
+    }
+    else {
+        // iPhone: perform a segue to show the photo
+        [self performSegueWithIdentifier:@"Reload Recent Photo" sender:photo];
+    }
+}
+
+
 #pragma mark - Prepare Segue
 
 - (void) prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     if ([segue.identifier isEqualToString:@"Reload Recent Photo"]) {
-        NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
-        NSDictionary *aPhoto = self.photoList[indexPath.row];
+        NSDictionary *aPhoto = nil;
+        // Coming from an annotation accessory click
+        if ([sender isKindOfClass:[NSDictionary class]]) {
+            aPhoto = (NSDictionary *)sender;
+        }
+        // Coming from a table click
+        else {
+            NSIndexPath *indexPath = [self.tableView indexPathForCell:sender];
+            aPhoto = self.photoList[indexPath.row];
+        }
         
+        // Set the photo to display
         [segue.destinationViewController setPhoto:aPhoto];
     }
+    else if ([segue.identifier isEqualToString:@"Reload Recent Photos Map"]) {
+        PhotoListMapViewController *mapVC = segue.destinationViewController;
+        mapVC.delegate = self;
+        mapVC.zoomToRegion = YES;
+        mapVC.annotations = [self mapAnnotations];
+        mapVC.title = @"Recent Places";
+    }    
 }
 @end

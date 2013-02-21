@@ -7,8 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "PhotoListMapViewController.h"
 
-@interface PhotoListTableViewController : UITableViewController
+@interface PhotoListTableViewController : UITableViewController <MapViewControllerDelegate>
 @property (nonatomic, strong) NSDictionary *place;
 @property (nonatomic, strong) NSArray *photoList;
+
+// Public since subclass is using these methods
+- (NSArray *)mapAnnotations;
+- (void)updateSplitViewDetail;
+- (void)updateSplitViewDetailWithPhoto:(NSDictionary *)photo;
+
 @end
